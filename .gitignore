@@ -1,0 +1,10 @@
+*.class
+*.log
+*-shim.sbt
+.*
+PingPong*Spec*.*
+
+!.gitignore
+
+project/target/
+target/
