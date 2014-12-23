@@ -42,7 +42,7 @@ class Hand (val cards: List[Card]) {
    * Sorts the hand following the 'default' criteria
    * @return a new Hand sorted
    */
-  def sort: Deck = ???
+  def sort: Hand = Hand(cards)
 
   override def toString = {
     "Hand [" + cards.mkString(",") + "]"
