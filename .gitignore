@@ -3,6 +3,8 @@
 *-shim.sbt
 .*
 PingPong*Spec*.*
+Ping*.*
+Pong*.*
 
 !.gitignore
 
