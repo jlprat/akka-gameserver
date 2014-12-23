@@ -1,19 +1,27 @@
-package com.typesafe.atmos.sample
+package com.github.jlprat.gameserver
 
-import akka.actor._
-import scala.concurrent.duration._
+import akka.actor.{Actor, ActorLogging, Props}
 
-object Sample extends App {
-  val system = ActorSystem("SimpleApp")
-  val pingActor = system.actorOf(Props[PingActor], "pingActor")
-  implicit val exec = system.dispatcher
-  system.scheduler.schedule(0 seconds, 1 seconds, pingActor, Ping)
+class PingActor extends Actor with ActorLogging {
+  import PingActor._
+
+  var counter = 0
+  val pongActor = context.actorOf(PongActor.props, "pongActor")
+
+  def receive = {
+    case Initialize =>
+      log.info("In PingActor - starting ping-pong")
+      pongActor ! PingMessage("ping")
+    case PongActor.PongMessage(text) =>
+      log.info("In PingActor - received message: {}", text)
+      counter += 1
+      if (counter == 3) context.system.shutdown()
+      else sender() ! PingMessage("ping")
+  }
 }
 
-case object Ping
-
-class PingActor extends Actor {
-  def receive = {
-    case Ping => println("Pinged at: " + System.currentTimeMillis)
-  }
+object PingActor {
+  val props = Props[PingActor]
+  case object Initialize
+  case class PingMessage(text: String)
 }
