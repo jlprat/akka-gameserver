@@ -20,6 +20,10 @@ object Hand {
    */
   def apply (cards: List[Card]) = new Hand(cards)
 
+  /**
+   * Generates an empty hand
+   * @return the empty Hand
+   */
   def apply () = new Hand(List())
 }
 
@@ -43,6 +47,18 @@ class Hand (val cards: List[Card]) {
    * @return a new Hand sorted
    */
   def sort: Hand = Hand(cards.sorted(SuitOrdering))
+
+  /**
+   * Sorts the hand following the 'default' (by suit) criteria
+   * @return a new Hand sorted
+   */
+  def sortBySuit: Hand = sort
+
+  /**
+   * Sorts the hand following the rank criteria
+   * @return a new Hand sorted by rank
+   */
+  def sortByRank: Hand = Hand(cards.sorted(RankOrdering))
 
   override def toString = {
     "Hand [" + cards.mkString(",") + "]"

@@ -6,11 +6,11 @@ import org.scalatest.WordSpec
  * Created by josep on 12/23/14.
  */
 class CardSpec extends WordSpec {
-  def cardAceSpades = Card(1,1,"spades")
-  def cardAceSpadesClone = Card(2,1,"spades")
-  def cardTwoSpades = Card(2,2,"spades")
-  def cardThreeSpades = Card(2,3,"spades")
-  def cardTwoHearts = Card(2,2,"hearts")
+  val cardAceSpades = Card(1,1,"spades")
+  val cardAceSpadesClone = Card(2,1,"spades")
+  val cardTwoSpades = Card(2,2,"spades")
+  val cardThreeSpades = Card(2,3,"spades")
+  val cardTwoHearts = Card(2,2,"hearts")
   "A Card" should {
     "be creatable in short way" in {
       assert(cardAceSpades != null)
