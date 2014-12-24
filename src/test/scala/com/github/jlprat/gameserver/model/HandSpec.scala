@@ -16,6 +16,7 @@ class HandSpec extends WordSpec {
   def twoCardsHand = Hand(cardsOneAndTWo)
   def oneCardHand = Hand(cardThree)
   def combinedHand = oneCardHand ::: twoCardsHand
+  def reversedCombinedHand = Hand(allCards.reverse)
 
   "A Hand" can {
     "be creatable" when {
@@ -34,6 +35,9 @@ class HandSpec extends WordSpec {
     "be appended to another one" in {
       assert(combinedHand.cards.size == allCards.size)
       assert(combinedHand.cards == allCards)
+    }
+    "be sortable" in {
+      assert(reversedCombinedHand.sort == combinedHand)
     }
   }
   "A Hand" should {

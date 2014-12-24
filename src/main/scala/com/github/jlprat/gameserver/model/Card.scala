@@ -4,6 +4,20 @@ object Card {
   def apply(id: Int, rank: Int, suit: String) = new Card(id, rank, suit)
 }
 
+object RankOrdering extends Ordering[Card] {
+  override def compare(x: Card, y: Card): Int = x.rank compare y.rank match {
+    case 0 => x.suit compare y.suit
+    case any => any
+  }
+}
+
+object SuitOrdering extends Ordering[Card] {
+  override def compare(x: Card, y: Card): Int = x.suit compare y.suit match {
+    case 0 => x.rank compare y.rank
+    case any => any
+  }
+}
+
 /**
  * It models a Card. It contains an Id because it might have duplicates
  * Created by josep on 12/23/14.

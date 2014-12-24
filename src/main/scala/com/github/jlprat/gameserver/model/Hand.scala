@@ -39,10 +39,10 @@ class Hand (val cards: List[Card]) {
   }
   
   /**
-   * Sorts the hand following the 'default' criteria
+   * Sorts the hand following the 'default' (by suit) criteria
    * @return a new Hand sorted
    */
-  def sort: Hand = Hand(cards)
+  def sort: Hand = Hand(cards.sorted(SuitOrdering))
 
   override def toString = {
     "Hand [" + cards.mkString(",") + "]"
