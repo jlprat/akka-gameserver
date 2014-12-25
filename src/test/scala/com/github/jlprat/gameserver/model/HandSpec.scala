@@ -25,51 +25,51 @@ class HandSpec extends WordSpec {
   "A Hand" can {
     "be creatable" when {
       "no cards are provided" in {
-        assert(emptyHand.cards.size == 0)
+        assert(emptyHand.cards.size === 0)
       }
       "a single card is provided" in {
-        assert(oneCardHand.cards.size == 1)
+        assert(oneCardHand.cards.size === 1)
         assert(oneCardHand.cards == List(cardThree))
       }
       "multiple cards are provided" in {
-        assert(twoCardsHand.cards.size == cardsOneAndTWo.size)
-        assert(twoCardsHand.cards == cardsOneAndTWo)
+        assert(twoCardsHand.cards.size === cardsOneAndTWo.size)
+        assert(twoCardsHand.cards === cardsOneAndTWo)
       }
     }
     "be appended to another one" in {
-      assert(combinedHand.cards.size == threeCards.size)
-      assert(combinedHand.cards == threeCards)
+      assert(combinedHand.cards.size === threeCards.size)
+      assert(combinedHand.cards === threeCards)
     }
     "be sorted" in {
-      assert(reversedCombinedHand.sort == combinedHand)
+      assert(reversedCombinedHand.sort === combinedHand)
     }
   }
   "A Hand" should {
     "be printable" in {
-      assert(twoCardsHand.toString() == "Hand [Card {id: 1, rank: 1, suit: diamonds},Card {id: 2, rank: 2, suit: diamonds}]")
+      assert(twoCardsHand.toString() === "Hand [Card {id: 1, rank: 1, suit: diamonds},Card {id: 2, rank: 2, suit: diamonds}]")
     }
   }
   "Sorting cards" when {
     "using rank sorting" should {
       "lowest card is first" in {
-        assert(fiveCardHand.sortByRank.cards.head == cardFour)
+        assert(fiveCardHand.sortByRank.cards.head === cardFour)
       }
       "highest card is last" in {
-        assert(fiveCardHand.sortByRank.cards.last == cardThree)
+        assert(fiveCardHand.sortByRank.cards.last === cardThree)
       }
       "have cards sorted correctly" in {
-        assert(fiveCardHand.sortByRank.cards == List(cardFour, cardOne, cardTwo, cardFive, cardThree))
+        assert(fiveCardHand.sortByRank.cards === List(cardFour, cardOne, cardTwo, cardFive, cardThree))
       }
     }
     "using suit sorting" should {
       "lowest card is first" in {
-        assert(fiveCardHand.sortBySuit.cards.head == cardFour)
+        assert(fiveCardHand.sortBySuit.cards.head === cardFour)
       }
       "highest card is last" in {
-        assert(fiveCardHand.sortBySuit.cards.last == cardFive)
+        assert(fiveCardHand.sortBySuit.cards.last === cardFive)
       }
       "have cards sorted correctly" in {
-        assert(fiveCardHand.sortBySuit.cards == List(cardFour, cardOne, cardTwo, cardThree, cardFive))
+        assert(fiveCardHand.sortBySuit.cards === List(cardFour, cardOne, cardTwo, cardThree, cardFive))
       }
     }
   }

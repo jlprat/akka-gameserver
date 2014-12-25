@@ -13,32 +13,32 @@ class CardSpec extends WordSpec {
   val cardTwoHearts = Card(2,2,"hearts")
   "A Card" should {
     "be creatable in short way" in {
-      assert(cardAceSpades != null)
+      assert(cardAceSpades !== null)
     }
     "be equal" when {
       "compared to itself" in {
-        assert(cardAceSpades == cardAceSpades)
+        assert(cardAceSpades === cardAceSpades)
         }
       }
     "differ" when {
       "compared to same card but different Id" in {
-        assert(cardAceSpades != cardAceSpadesClone)
+        assert(cardAceSpades !== cardAceSpadesClone)
       }
       "compared to different rank" in {
-        assert(cardTwoSpades != cardThreeSpades)
+        assert(cardTwoSpades !== cardThreeSpades)
       }
       "compared to different suit" in {
-        assert(cardTwoSpades != cardTwoHearts)
+        assert(cardTwoSpades !== cardTwoHearts)
       }
     }
     "be printable" in {
-      assert(cardAceSpades.toString() == "Card {id: 1, rank: 1, suit: spades}")
+      assert(cardAceSpades.toString() === "Card {id: 1, rank: 1, suit: spades}")
     }
   }
   "Sorting by rank" should {
     "be 0" when {
       "cards have the same rank and suit" in {
-        assert(RankOrdering.compare(cardAceSpades, cardAceSpadesClone) == 0)
+        assert(RankOrdering.compare(cardAceSpades, cardAceSpadesClone) === 0)
       }
     }
     "be negative" when {
@@ -61,7 +61,7 @@ class CardSpec extends WordSpec {
   "Sorting by suit" should {
     "be 0" when {
       "cards have the same rank and suit" in {
-        assert(SuitOrdering.compare(cardAceSpades, cardAceSpadesClone) == 0)
+        assert(SuitOrdering.compare(cardAceSpades, cardAceSpadesClone) === 0)
       }
     }
     "be negative" when {
