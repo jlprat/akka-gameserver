@@ -51,16 +51,12 @@ class Deck (val deck: List[Card]) {
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
   def draw(numberPlayers: Int, target:Int, step: Int): Option[(Seq[Hand], Deck)] = {
+   take(numberPlayers * target).map(tuple => {
+     val (drawnCards, remainingCards) = tuple
+     val cards = drawnCards.cards.sliding(step, step).zipWithIndex
 
-    ???
-  }
-
-  /**
-   * takes the top most card from the deck
-   * @return The top most Card and the remaining Deck
-   */
-  def takeOne: (Option[(Hand,Deck)]) = {
-    take(1)
+     ???
+   })
   }
 
   /**
@@ -76,7 +72,7 @@ class Deck (val deck: List[Card]) {
   }
 
   override def toString = {
-    "[" + deck.mkString(",") + "]"
+    "Deck [" + deck.mkString(",") + "]"
   }
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Deck]
