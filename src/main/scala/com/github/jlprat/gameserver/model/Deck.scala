@@ -21,6 +21,7 @@ object Deck {
 }
 
 /**
+ * Class that models a card deck
  * Created by josep on 12/23/14.
  */
 class Deck(val deck: List[Card]) {
@@ -31,6 +32,13 @@ class Deck(val deck: List[Card]) {
    * @return a shuffled deck
    */
   def shuffle: Deck = ???
+
+  /**
+   * @return the number of cards in the deck
+   */
+  def size = {
+    deck.size
+  }
 
   /**
    * Draws card to a specific number of players, taking cards one by one

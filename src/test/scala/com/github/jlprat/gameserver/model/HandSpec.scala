@@ -44,9 +44,39 @@ class HandSpec extends WordSpec {
       assert(reversedCombinedHand.sort === combinedHand)
     }
   }
-  "A Hand" should {
+  "A Hand" must {
     "be printable" in {
       assert(twoCardsHand.toString() === "Hand [Card {id: 1, rank: 1, suit: diamonds},Card {id: 2, rank: 2, suit: diamonds}]")
+    }
+    "offer a way to check if a card is present" in {
+      assert(twoCardsHand.exists(_ === cardOne))
+      assert(!twoCardsHand.exists(_ === cardFive))
+    }
+  }
+  "A Hand" when {
+    "not empty" must {
+      "offer a way to play a card" when {
+        "card is present" in {
+          val (cardOption, hand) = combinedHand.play(cardOne)
+          assert(hand.size === 2)
+          assert(cardOption.isDefined)
+          assert(cardOption.forall(_ == cardOne))
+        }
+      }
+      "fail to play a card" when {
+        "card is not present" in {
+          val (cardOption, hand) = combinedHand.play(cardFive)
+          assert(hand.size === 3)
+          assert(cardOption.isEmpty)
+        }
+      }
+    }
+    "empty" must {
+      "fail to play a card" in {
+        val (cardOption, hand) = emptyHand.play(cardFive)
+        assert(hand.size === 0)
+        assert(cardOption.isEmpty)
+      }
     }
   }
   "Sorting cards" when {

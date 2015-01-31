@@ -51,6 +51,24 @@ class Hand (val cards: List[Card]) {
   }
 
   /**
+   * Plays a card from the hand 
+   * @param card the card that should be played
+   * @return an optional Card (if present) and the remaining Hand
+   */
+  def play(card: Card): (Option[Card], Hand) = {
+    (cards.find(_ == card), Hand(cards.filterNot(_ == card)))
+  }
+
+  /**
+   * Checks if there is a card that satisfies <code>f</code>
+   * @param f function to test the cards against
+   * @return <code>true</code> if there is a card that satisfies <code>f</code>
+   */
+  def exists(f: Card => Boolean): Boolean = {
+    cards.exists(f)
+  }
+
+  /**
    * Sorts the hand following the 'default' (by suit) criteria
    * @return a new Hand sorted
    */
