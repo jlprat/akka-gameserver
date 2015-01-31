@@ -23,7 +23,7 @@ object Deck {
 /**
  * Created by josep on 12/23/14.
  */
-class Deck (val deck: List[Card]) {
+class Deck(val deck: List[Card]) {
 
 
   /**
@@ -38,7 +38,7 @@ class Deck (val deck: List[Card]) {
    * @param target the number of cards each player must have
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
-  def draw(numberPlayers: Int, target: Int): Option[(Seq[Hand], Deck)] = {
+  def draw(numberPlayers: Int, target: Int): Option[(Iterable[Hand], Deck)] = {
     draw(numberPlayers, target, 1)
   }
 
@@ -50,21 +50,24 @@ class Deck (val deck: List[Card]) {
    *             on how many cards should be still dealt
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
-  def draw(numberPlayers: Int, target:Int, step: Int): Option[(Seq[Hand], Deck)] = {
-   take(numberPlayers * target).map(tuple => {
-     val (drawnCards, remainingCards) = tuple
-     val cards = drawnCards.cards.sliding(step, step).zipWithIndex
-
-     ???
-   })
+  def draw(numberPlayers: Int, target: Int, step: Int): Option[(Iterable[Hand], Deck)] = {
+    take(numberPlayers * target).map(tuple => {
+      val (drawnCards, remainingCards) = tuple
+      val grouped = drawnCards.cards.sliding(step, step).zipWithIndex.toList.groupBy(_._2 % numberPlayers)
+      val hands = for {
+        i <- 0 to (numberPlayers-1)
+        cs = grouped(i).map(_._1).flatten
+      } yield Hand(cs)
+      (hands, remainingCards)
+    })
   }
 
   /**
    * takes the 'n' top most card from the deck
    * @return The 'n' top most Card and the remaining Deck
    */
-  def take(n:Int): Option[(Hand, Deck)] = {
-    if(deck.size < n) None
+  def take(n: Int): Option[(Hand, Deck)] = {
+    if (deck.size < n) None
     else {
       val (taken, rest) = deck.splitAt(n)
       Some(Hand(taken), Deck(rest))

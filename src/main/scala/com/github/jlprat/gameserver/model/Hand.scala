@@ -41,7 +41,15 @@ class Hand (val cards: List[Card]) {
   def ::: (other: Hand) = {
     Hand(cards ::: other.cards)
   }
-  
+
+  /**
+   * To get the number of cards that form this hand
+   * @return the number of cards
+   */
+  def size = {
+    cards.size
+  }
+
   /**
    * Sorts the hand following the 'default' (by suit) criteria
    * @return a new Hand sorted

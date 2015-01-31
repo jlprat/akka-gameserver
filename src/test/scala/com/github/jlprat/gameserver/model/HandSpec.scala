@@ -25,19 +25,19 @@ class HandSpec extends WordSpec {
   "A Hand" can {
     "be creatable" when {
       "no cards are provided" in {
-        assert(emptyHand.cards.size === 0)
+        assert(emptyHand.size === 0)
       }
       "a single card is provided" in {
-        assert(oneCardHand.cards.size === 1)
+        assert(oneCardHand.size === 1)
         assert(oneCardHand.cards == List(cardThree))
       }
       "multiple cards are provided" in {
-        assert(twoCardsHand.cards.size === cardsOneAndTWo.size)
+        assert(twoCardsHand.size === cardsOneAndTWo.size)
         assert(twoCardsHand.cards === cardsOneAndTWo)
       }
     }
     "be appended to another one" in {
-      assert(combinedHand.cards.size === threeCards.size)
+      assert(combinedHand.size === threeCards.size)
       assert(combinedHand.cards === threeCards)
     }
     "be sorted" in {

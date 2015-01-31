@@ -1,9 +1,5 @@
 package com.github.jlprat.gameserver.model
 
-object Card {
-  def apply(id: Int, rank: Int, suit: String) = new Card(id, rank, suit)
-}
-
 object RankOrdering extends Ordering[Card] {
   override def compare(x: Card, y: Card): Int = x.rank compare y.rank match {
     case 0 => x.suit compare y.suit
@@ -22,7 +18,7 @@ object SuitOrdering extends Ordering[Card] {
  * It models a Card. It contains an Id because it might have duplicates
  * Created by josep on 12/23/14.
  */
-class Card (val id: Int, val rank: Int, val suit: String) {
+case class Card (val id: Int, val rank: Int, val suit: String) {
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Card]
 
