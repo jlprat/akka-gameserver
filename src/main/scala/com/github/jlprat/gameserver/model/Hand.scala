@@ -24,7 +24,7 @@ object Hand {
  * Hand is a representation of a bunch of Cards. Typically this will represent the cards the player has in his hands
  * @param cards
  */
-case class Hand (cards: List[Card]) {
+case class Hand (protected[model] val cards: List[Card]) {
 
   /**
    * Merges to different Hands

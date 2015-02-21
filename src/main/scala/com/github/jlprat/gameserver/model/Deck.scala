@@ -1,5 +1,7 @@
 package com.github.jlprat.gameserver.model
 
+import scala.util.Random
+
 /**
  * Companion object for Deck
  * Created by josep on 12/23/14.
@@ -17,14 +19,17 @@ object Deck {
  * Class that models a card deck
  * Created by josep on 12/23/14.
  */
-case class Deck(deck: List[Card]) {
+case class Deck(protected[model] val deck: List[Card]) {
 
 
   /**
    * Shuffles the deck
    * @return a shuffled deck
    */
-  def shuffle: Deck = ???
+  def shuffle(seed: Long = 123456L): Deck = {
+    val randomGenerator = new Random(seed)
+    Deck(randomGenerator.shuffle(deck))
+  }
 
   /**
    * @return the number of cards in the deck
@@ -52,14 +57,19 @@ case class Deck(deck: List[Card]) {
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
   def draw(numberPlayers: Int, target: Int, step: Int): Option[(Iterable[Hand], Deck)] = {
-    take(numberPlayers * target).map(tuple => {
+    val (intermediate, last) = (target - (target % step), target % step)
+    take(numberPlayers * intermediate).flatMap(tuple => {
       val (drawnCards, remainingCards) = tuple
       val grouped = drawnCards.cards.sliding(step, step).zipWithIndex.toList.groupBy(_._2 % numberPlayers)
       val hands = for {
         i <- 0 to (numberPlayers-1)
         cs = grouped(i).map(_._1).flatten
       } yield Hand(cs)
-      (hands, remainingCards)
+      if (last > 0) {
+        remainingCards.draw(numberPlayers, last, last).map(t => {
+          (t._1.zip(hands).map(h => h._1 ::: h._2), t._2)
+        })
+      } else  Some(hands, remainingCards)
     })
   }
 

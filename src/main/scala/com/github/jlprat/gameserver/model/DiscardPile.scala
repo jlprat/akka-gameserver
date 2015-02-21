@@ -19,7 +19,7 @@ object DiscardPile {
  * This class represents the discarded cards from all players
  * Created by josep on 12/23/14.
  */
-case class DiscardPile (cards: List[Card]) {
+case class DiscardPile (protected[model] val cards: List[Card]) {
 
   /**
    * discards a new card to the discard pile
@@ -27,5 +27,10 @@ case class DiscardPile (cards: List[Card]) {
    * @return a new discarded pile with this card on top
    */
   def ::(card: Card) = DiscardPile(card :: cards)
+
+  /**
+   * @return the size of the discard pile
+   */
+  def size: Int = cards.size
 
 }

@@ -74,7 +74,7 @@ class DeckSpec extends WordSpec{
             }
           }
         }
-        "taking 2 cards at a time" must {
+        "taking 2 cards at a time for 2 players" must {
           val drawnOption = deck.draw(3,6,2)
           assert(drawnOption.isDefined)
           val (hands, restOfDeck) = drawnOption.get
@@ -90,6 +90,46 @@ class DeckSpec extends WordSpec{
           }
           "have the following cards for 3rd player" in {
             assert(hands.last === Hand(List.tabulate(3)(elem => List(Card(elem * 6 + 4, elem * 6 + 4, "suit"), Card(elem * 6 + 5,elem * 6 + 5,"suit"))).flatten))
+          }
+          "top Card on the deck is correct" in {
+            assert(restOfDeck.deck.head === Card(18, 18, "suit"))
+          }
+        }
+        "drawing odd number of cards taking by 2" must {
+          val drawnOption = deck.draw(2,5,2)
+          assert(drawnOption.isDefined)
+          val (hands, restOfDeck) = drawnOption.get
+          "have 2 hands with 5 cards each" in {
+            assert(hands.size === 2)
+            assert(hands.forall(_.size === 5))
+          }
+          "have the following cards for 1st player" in {
+            assert(hands.head === Hand(List(Card(0, 0, "suit"), Card(1, 1,"suit"), Card(4, 4, "suit"), Card(5, 5,"suit"), Card(8, 8, "suit"))))
+          }
+          "have the following cards for 2nd player" in {
+            assert(hands.last === Hand(List(Card(2, 2, "suit"), Card(3, 3,"suit"), Card(6, 6, "suit"), Card(7, 7,"suit"), Card(9, 9, "suit"))))
+          }
+          "top Card on the deck is correct" in {
+            assert(restOfDeck.deck.head === Card(10, 10, "suit"))
+          }
+        }
+        "drawing odd number of cards taking by 3" must {
+          val drawnOption = deck.draw(2,5,3)
+          assert(drawnOption.isDefined)
+          val (hands, restOfDeck) = drawnOption.get
+          "have 2 hands with 5 cards each" in {
+            assert(hands.size === 2)
+            hands.foreach(hand => println(hand.size))
+            assert(hands.forall(_.size === 5))
+          }
+          "have the following cards for 1st player" in {
+            assert(hands.head === Hand(List(Card(0, 0, "suit"), Card(1, 1,"suit"), Card(2, 2, "suit"), Card(6, 6,"suit"), Card(7, 7, "suit"))))
+          }
+          "have the following cards for 2nd player" in {
+            assert(hands.last === Hand(List(Card(3, 3, "suit"), Card(4, 4,"suit"), Card(5, 5, "suit"), Card(8, 8,"suit"), Card(9, 9, "suit"))))
+          }
+          "top Card on the deck is correct" in {
+            assert(restOfDeck.deck.head === Card(10, 10, "suit"))
           }
         }
       }
@@ -107,6 +147,21 @@ class DeckSpec extends WordSpec{
       "not let me draw cards to players" in {
         assert(Deck.empty().draw(2,4).isEmpty)
       }
+    }
+  }
+  "A deck shuffle" must {
+    val shuffledDeck = deck.shuffle()
+    "change the order of the cards" in {
+      assert(shuffledDeck !== deck)
+    }
+    "be consistent" in {
+      assert(shuffledDeck === deck.shuffle())
+    }
+    "be different given different seeds" in {
+      assert(shuffledDeck !== deck.shuffle(4348934L))
+    }
+    "not change the original deck" in {
+      assert(deck === Deck(List.tabulate(numberCards)(elem => Card(elem, elem, "suit"))))
     }
   }
 
