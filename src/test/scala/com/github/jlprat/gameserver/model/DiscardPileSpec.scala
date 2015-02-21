@@ -40,7 +40,7 @@ package foo {
 
     import com.github.jlprat.gameserver.model._
 
-    "access to inner members giis protected" in {
+    "access to inner state is protected" in {
       assertDoesNotCompile(
         """
         val discardPile = Card(2, 2, "suit") :: DiscardPile(Card(1, 1, "suit"))
