@@ -14,13 +14,6 @@ object Hand {
   def apply (card: Card) = new Hand(List(card))
 
   /**
-   * Generates a hand from a collection of cards
-   * @param cards the cards to generate a hand from
-   * @return a Hand containing the desired cards
-   */
-  def apply (cards: List[Card]) = new Hand(cards)
-
-  /**
    * Generates an empty hand
    * @return the empty Hand
    */
@@ -31,7 +24,7 @@ object Hand {
  * Hand is a representation of a bunch of Cards. Typically this will represent the cards the player has in his hands
  * @param cards
  */
-class Hand (val cards: List[Card]) {
+case class Hand (cards: List[Card]) {
 
   /**
    * Merges to different Hands

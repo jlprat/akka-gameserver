@@ -4,12 +4,6 @@ package com.github.jlprat.gameserver.model
  * Companion object for the DiscardPile
  */
 object DiscardPile {
-  /**
-   * creates a new Discard pile with the specific cards
-   * @param cards the cards to add to the discard pile
-   * @return the desired discard pile
-   */
-  def apply(cards: List[Card]) = new DiscardPile(cards)
 
   /**
    * creates a new Discard pile with the specific card
@@ -25,7 +19,7 @@ object DiscardPile {
  * This class represents the discarded cards from all players
  * Created by josep on 12/23/14.
  */
-class DiscardPile (val cards: List[Card]) {
+case class DiscardPile (cards: List[Card]) {
 
   /**
    * discards a new card to the discard pile

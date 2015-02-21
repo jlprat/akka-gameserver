@@ -7,13 +7,6 @@ package com.github.jlprat.gameserver.model
 object Deck {
 
   /**
-   * Creates a new Deck object from a list of cards
-   * @param deck the desired list of cards
-   * @return the Deck containing the cards
-   */
-  def apply(deck: List[Card]) = new Deck(deck)
-
-  /**
    * Creates an empty Deck, this is, with no cards
    * @return the empty Deck
    */
@@ -24,7 +17,7 @@ object Deck {
  * Class that models a card deck
  * Created by josep on 12/23/14.
  */
-class Deck(val deck: List[Card]) {
+case class Deck(deck: List[Card]) {
 
 
   /**

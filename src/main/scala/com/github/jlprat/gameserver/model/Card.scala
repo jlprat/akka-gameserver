@@ -18,7 +18,7 @@ object SuitOrdering extends Ordering[Card] {
  * It models a Card. It contains an Id because it might have duplicates
  * Created by josep on 12/23/14.
  */
-case class Card (val id: Int, val rank: Int, val suit: String) {
+case class Card (id: Int, rank: Int, suit: String) {
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Card]
 
