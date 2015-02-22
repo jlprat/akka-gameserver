@@ -119,7 +119,6 @@ class DeckSpec extends WordSpec{
           val (hands, restOfDeck) = drawnOption.get
           "have 2 hands with 5 cards each" in {
             assert(hands.size === 2)
-            hands.foreach(hand => println(hand.size))
             assert(hands.forall(_.size === 5))
           }
           "have the following cards for 1st player" in {
