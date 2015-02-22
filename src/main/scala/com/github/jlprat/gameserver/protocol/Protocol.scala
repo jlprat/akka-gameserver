@@ -40,7 +40,7 @@ object Protocol {
    * @param hand the cards the player will get
    * @param playerId the player who will receive the cards
    */
-  case class TakenCard(hand: Hand, playerId: Int)
+  case class TakenCards(hand: Hand, playerId: Int)
 
   /**
    * Informative notification to be sent to players who are not {@code playerId}
