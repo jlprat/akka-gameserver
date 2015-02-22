@@ -58,19 +58,18 @@ case class Deck(protected[model] val deck: List[Card]) {
    */
   def draw(numberPlayers: Int, target: Int, step: Int): Option[(Iterable[Hand], Deck)] = {
     val (intermediate, last) = (target - (target % step), target % step)
-    take(numberPlayers * intermediate).flatMap(tuple => {
-      val (drawnCards, remainingCards) = tuple
+    take(numberPlayers * intermediate).flatMap{ case (drawnCards, remainingCards) => {
       val grouped = drawnCards.cards.sliding(step, step).zipWithIndex.toList.groupBy(_._2 % numberPlayers)
       val hands = for {
         i <- 0 to (numberPlayers-1)
         cs = grouped(i).map(_._1).flatten
       } yield Hand(cs)
       if (last > 0) {
-        remainingCards.draw(numberPlayers, last, last).map(t => {
-          (t._1.zip(hands).map(h => h._1 ::: h._2), t._2)
-        })
+        remainingCards.draw(numberPlayers, last, last).map{case (lastHands, finalDeck) =>
+          (lastHands.zip(hands).map{ case (lastHand, previousHand) => lastHand ::: previousHand}, finalDeck)
+        }
       } else  Some(hands, remainingCards)
-    })
+    }}
   }
 
   /**
