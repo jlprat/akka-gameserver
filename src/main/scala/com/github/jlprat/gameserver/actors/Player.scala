@@ -19,11 +19,12 @@ class Player (val id: Int, val tableActor: ActorRef) extends Actor with ActorLog
   def waitingForCards: Receive = {
     case TakenCards(hand, playerId) if playerId == id => inactivePlayer(hand)
     case TakenCards(hand, playerId) => log.info(s"Player $playerId receives ${hand.size} cards")
+    case message => log.error(s"Unknown message $message")
   }
 
   def inactivePlayer(hand: Hand): Receive = {
     case NextTurn(playerId) if playerId == id => ???
-    case message: _ => log.info(s"Informative message is received $message")
+    case message => log.info(s"Informative message is received $message")
   }
 
   override def receive: Receive = waitingForCards
