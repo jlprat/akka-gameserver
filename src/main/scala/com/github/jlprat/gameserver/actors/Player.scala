@@ -11,13 +11,14 @@ class Player (val id: Int, val tableActor: ActorRef) extends Actor with ActorLog
 
   import com.github.jlprat.gameserver.protocol.Protocol._
   import com.github.jlprat.gameserver.model._
+  import context._
 
   /**
    * state where the player waits for getting the cards dealt
    * @return
    */
   def waitingForCards: Receive = {
-    case TakenCards(hand, playerId) if playerId == id => inactivePlayer(hand)
+    case TakenCards(hand, playerId) if playerId == id => become(inactivePlayer(hand))
     case TakenCards(hand, playerId) => log.info(s"Player $playerId receives ${hand.size} cards")
     case message => log.error(s"Unknown message $message")
   }
