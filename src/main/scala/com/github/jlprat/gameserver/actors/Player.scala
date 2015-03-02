@@ -24,8 +24,14 @@ class Player (val id: Int, val tableActor: ActorRef) extends Actor with ActorLog
   }
 
   def inactivePlayer(hand: Hand): Receive = {
-    case NextTurn(playerId) if playerId == id => ???
+    case NextTurn(playerId) if playerId == id => become(activePlayer(hand))
     case message => log.info(s"Informative message is received $message")
+  }
+
+  def activePlayer(hand: Hand): Receive = {
+    case NextTurn(playerId) if playerId != id => become(inactivePlayer(hand))
+    case TakenCards(receivedCards, playerId) if playerId == id => become(activePlayer(hand:::receivedCards))
+    case PlayedCard(card, playerId) if playerId == id => ???
   }
 
   override def receive: Receive = waitingForCards

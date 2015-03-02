@@ -137,4 +137,28 @@ object Protocol {
    * @param suit the new suit of the top card
    */
   case class ChangedSuit(suit: String)
+
+
+  /**
+   * The player finished the game (played all cards)
+   */
+  case object FinishedGame
+
+  /**
+   * Player is asked to show the cards
+   */
+  case object ShowCards
+
+  /**
+   * Player shows the current hand
+   * @param hand the hand of the player
+   * @param playerId the player who is showing the cards
+   */
+  case class CurrentHand(hand: Hand, playerId: Int)
+
+  /**
+   * Player gets the overall scores
+   * @param results a map from playerId to Score
+   */
+  case class GameResults(results: Map[Int, Int])
 }
