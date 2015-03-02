@@ -3,7 +3,8 @@ package com.github.jlprat.gameserver.actor
 import akka.actor.{Props, ActorSystem}
 import akka.testkit.{EventFilter, TestProbe, ImplicitSender, TestKit}
 import com.github.jlprat.gameserver.actors.Player
-import com.github.jlprat.gameserver.model.Hand
+import com.github.jlprat.gameserver.model.{Card, Hand}
+import com.github.jlprat.gameserver.protocol.ClientProtocol._
 import com.github.jlprat.gameserver.protocol.Protocol._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
@@ -17,7 +18,8 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
   def this() = this(ActorSystem("GameServerSpec"))
 
   val tableActorProbe = TestProbe()
-  val playerActor = system.actorOf(Props(classOf[Player], 1, tableActorProbe.ref))
+  val clientActorProbe = TestProbe()
+  val playerActor = system.actorOf(Props(classOf[Player], 1, tableActorProbe.ref, clientActorProbe.ref))
 
   override def afterAll {
     TestKit.shutdownActorSystem(system)
@@ -31,12 +33,23 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
         EventFilter.error(message = s"Unknown message $message", occurrences = 1)
       }
     }
-    "receives a TakenCards message for other player" must{
-      "log the message received" in {
-        val message = TakenCards(Hand(),1)
-        playerActor ! message
-        EventFilter.info(message = s"Informative message is received $message", occurrences = 1)
+    "receives a TakenCards message" when {
+      "is for other player" must {
+        "log the message received" in {
+          val message = TakenCards(Hand(Card(1, 1, "red")), playerId = 2)
+          playerActor ! message
+          clientActorProbe.expectMsg(Out.ReceiveCardOpponent(numberCards = 1, playerId = 2))
+          EventFilter.info(message = s"Player ${message.playerId} receives ${message.hand.size} cards", occurrences = 1)
+        }
       }
+      "is for same player" must {
+        "communicate it back to client" in {
+          val message = TakenCards(Hand(Card(1, 1, "red")), playerId = 1)
+          playerActor ! message
+          clientActorProbe.expectMsg(Out.ReceiveCard(Hand(Card(1, 1, "red")), playerId = 1))
+        }
+      }
+
     }
   }
 

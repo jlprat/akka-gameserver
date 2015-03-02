@@ -140,6 +140,19 @@ object Protocol {
 
 
   /**
+   * The player announces Last Card
+   * @param playerId the player who did the announcement
+   */
+  case class AnnounceLastCard(playerId: Int)
+
+  /**
+   * A player announced Last Card
+   * @param playerId the player who announced
+   */
+  case class AnnouncedLastCard(playerId: Int)
+
+
+  /**
    * The player finished the game (played all cards)
    */
   case object FinishedGame

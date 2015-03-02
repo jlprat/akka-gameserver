@@ -47,6 +47,16 @@ object ClientProtocol {
   object Out {
 
     /**
+     * Client is notified about the last message sent is not possible, maybe tried the wrong card
+     */
+    case object WrongAction
+
+    /**
+     * Client is informed that it is not their turn
+     */
+    case object NotInTurn
+
+    /**
      * Client is informed about a card being played successfully
      * @param card the card played
      * @param playerId the player who played it
