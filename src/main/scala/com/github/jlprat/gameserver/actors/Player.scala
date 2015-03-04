@@ -20,6 +20,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
    */
   def waitingForCards: Receive = {
     case TakenCards(hand, playerId) if playerId == id =>
+      log.info(s"I receive a hand $hand")
       client ! Out.ReceiveCard(hand, playerId)
       become(inactivePlayer(hand), discardOld = true)
     case TakenCards(hand, playerId) =>
@@ -37,8 +38,23 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case TakenCards(hand, playerId) if playerId != id =>
       log.info(s"Player $playerId receives ${hand.size} cards")
       client ! Out.ReceiveCardOpponent(hand.size, playerId)
-    case NextTurn(playerId) if playerId == id => become(activePlayer(hand), discardOld = true)
+    case NextTurn(playerId) if playerId == id =>
+      log.info(s"I receive a Next Turn message for me")
+      client ! Out.PlayerInTurn(playerId)
+      become(activePlayer(hand), discardOld = true)
+    case NextTurn(playerId) =>
+      log.info(s"I receive a Next Turn message for $playerId")
+      client ! Out.PlayerInTurn(playerId)
     case In.Leave => tableActor ! Leave(id)
+    case In.AnnounceLastCard if hand.size == 1 =>
+      tableActor ! AnnounceLastCard(id)
+    case In.AnnounceLastCard if hand.size > 1 =>
+      tableActor ! TakeCard(id)
+      client ! Out.WrongAction
+      become(playerMadeAction(hand), discardOld = true)
+    case _ : In.Incoming =>
+      log.error("Not your turn")
+      client ! Out.NotInTurn
     case message => log.info(s"Informative message is received $message")
   }
 
@@ -66,6 +82,9 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       tableActor ! TakeCard(id)
       client ! Out.WrongAction
       become(playerMadeAction(hand), discardOld = true)
+    case NextTurn(playerId) if playerId != id =>
+      //TODO this should be a clear corner case once the timers are installed
+      log.error("I am out of sync, or somebody impersonated me!")
   }
 
   /**

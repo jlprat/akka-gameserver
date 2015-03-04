@@ -2,6 +2,8 @@ package com.github.jlprat.gameserver.protocol
 
 /**
  * Contains the protocol messages between client and server
+ * Some messages have a 1 to 1 mapping with the server ones. However, it's by design that server messages are not
+ * exposed to the clients, this way inner refactorings should not affect the clients.
  * Created by josep on 3/2/15.
  */
 object ClientProtocol {
@@ -13,32 +15,34 @@ object ClientProtocol {
    */
   object In {
 
+    sealed trait Incoming
+
     /**
      * Client requests to play a card
      * @param card the card to be played
      */
-    case class PlayCardRequest(card: Card)
+    case class PlayCardRequest(card: Card) extends Incoming
 
     /**
      * Client requests to get a card from the pile
      */
-    case object TakeCardsRequest
+    case object TakeCardsRequest extends Incoming
 
     /**
      * Client announces Last Card
      */
-    case object AnnounceLastCard
+    case object AnnounceLastCard extends Incoming
 
     /**
      * Client requests to change the suit
      * @param suit the suit to be changed to
      */
-    case class SelectSuitRequest(suit: String)
+    case class SelectSuitRequest(suit: String) extends Incoming
 
     /**
      * Client leaves the game
      */
-    case object Leave
+    case object Leave extends Incoming
   }
 
   /**
@@ -55,6 +59,12 @@ object ClientProtocol {
      * Client is informed that it is not their turn
      */
     case object NotInTurn
+
+    /**
+     * Client is informed about who is in turn
+     * @param playerId the player in turn
+     */
+    case class PlayerInTurn(playerId: Int)
 
     /**
      * Client is informed about a card being played successfully
