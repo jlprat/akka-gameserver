@@ -65,11 +65,14 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
    * @return
    */
   def activePlayer(hand: Hand): Receive = {
-    case In.PlayCardRequest(card) if hand.exists( _ == card) =>
+    case msg @ In.PlayCardRequest(card) if hand.exists( _ == card) =>
+      log.info(s"Player tries to play a card we have $msg")
       val (cardOption, newHand) = hand.play(card)
       cardOption.foreach(playedCard => tableActor ! PlayCard(playedCard, id))
       become(playerMadeAction(newHand), discardOld = true)
-    case In.PlayCardRequest => client ! Out.WrongAction
+    case In.PlayCardRequest =>
+      log.error("Client tries to play a card we don't have!")
+      client ! Out.WrongAction
     case In.TakeCardsRequest =>
       tableActor ! TakeCard(id)
       become(playerMadeAction(hand), discardOld = true)
@@ -85,6 +88,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case NextTurn(playerId) if playerId != id =>
       //TODO this should be a clear corner case once the timers are installed
       log.error("I am out of sync, or somebody impersonated me!")
+    case message => log.debug(s"received $message")
   }
 
   /**
@@ -93,16 +97,23 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
    * @return
    */
   def playerMadeAction(hand: Hand): Receive = {
-    case ChangeSuitRequest => 
+    case ChangeSuitRequest =>
+      client ! Out.SelectSuitRequest
+      become(changeSuit(hand), discardOld = true)
+    case PlayedCardIllegal(card, playerId) =>
+      client ! Out.PlayedCardIrregularly(card, playerId)
+      become(activePlayer(card :: hand), discardOld = true)
     case TakenCards(receivedCards, playerId) if playerId == id => become(playerMadeAction(hand:::receivedCards), discardOld = true)
     case NextTurn(playerId) if playerId == id => become(activePlayer(hand), discardOld = true)
     case NextTurn => become(inactivePlayer(hand), discardOld = true)
+    case message => log.debug(s"received $message")
   }
 
   def changeSuit(hand: Hand): Receive = {
     case In.SelectSuitRequest(suit) =>
       tableActor ! ChangeSuit(suit, id)
       become(playerMadeAction(hand), discardOld = true)
+    case message => log.debug(s"received $message")
   }
 
   /**

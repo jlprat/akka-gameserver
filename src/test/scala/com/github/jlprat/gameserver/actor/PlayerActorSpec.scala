@@ -1,5 +1,7 @@
 package com.github.jlprat.gameserver.actor
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor.{ActorRef, Props, ActorSystem}
 import akka.testkit.{EventFilter, TestProbe, ImplicitSender, TestKit}
 import com.github.jlprat.gameserver.actors.Player
@@ -7,6 +9,8 @@ import com.github.jlprat.gameserver.model.{Card, Hand}
 import com.github.jlprat.gameserver.protocol.ClientProtocol._
 import com.github.jlprat.gameserver.protocol.Protocol._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+
+import scala.concurrent.duration.FiniteDuration
 
 /**
  * Specification on how the player should behave
@@ -72,10 +76,36 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
   "After dealt, a player" can {
     otherPlayerActor ! TakenCards(playerHand, playerId = 2)
     clientActorProbe.expectMsg(Out.ReceiveCard(playerHand, playerId = 2))
-    "be in turn" when {
-      "receives NextTurn message" in {
-        otherPlayerActor ! NextTurn(playerId = 2)
-        clientActorProbe.expectMsg(Out.PlayerInTurn(playerId = 2))
+    "receive Next turn messages for other players" in{
+      otherPlayerActor ! NextTurn(playerId = 1)
+      clientActorProbe.expectMsg(Out.PlayerInTurn(playerId = 1))
+    }
+    val cardInHand: Card = Card(0, 0, "blue")
+    "not play any card" when {
+      "not in turn" must {
+        "client get a notification" in {
+          otherPlayerActor ! In.PlayCardRequest(cardInHand)
+          clientActorProbe.expectMsg(Out.NotInTurn)
+        }
+        "table get no message" in {
+          tableActorProbe.expectNoMsg(FiniteDuration(100, TimeUnit.MILLISECONDS))
+        }
+      }
+    }
+    "receive NextTurn message for thyself" in {
+      otherPlayerActor ! NextTurn(playerId = 2)
+      clientActorProbe.expectMsg(Out.PlayerInTurn(playerId = 2))
+
+    }
+    "play a card" when {
+      "card is not in hand" in {
+        //otherPlayerActor ! In.PlayCardRequest(Card(0, 0, "red"))
+        //  tableActorProbe.expectNoMsg(FiniteDuration(100, TimeUnit.MILLISECONDS))
+        //  clientActorProbe.expectMsg(Out.WrongAction)
+      }
+      "card is in hand" in {
+        otherPlayerActor ! In.PlayCardRequest(cardInHand)
+        tableActorProbe.expectMsg(PlayCard(cardInHand, playerId = 2))
       }
     }
   }

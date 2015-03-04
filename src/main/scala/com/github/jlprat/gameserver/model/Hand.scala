@@ -36,6 +36,15 @@ case class Hand (protected[model] val cards: List[Card]) {
   }
 
   /**
+   * Adds a new card to the hand
+   * @param card the card to be added
+   * @return a merged Hand containing the new card
+   */
+  def :: (card: Card) = {
+    Hand(card :: cards)
+  }
+
+  /**
    * To get the number of cards that form this hand
    * @return the number of cards
    */

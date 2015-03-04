@@ -40,6 +40,9 @@ class HandSpec extends WordSpec {
       assert(combinedHand.size === threeCards.size)
       assert(combinedHand.cards === threeCards)
     }
+    "be added a new card to it" in {
+      assert((cardThree :: twoCardsHand).sort === combinedHand.sort)
+    }
     "be sorted" in {
       assert(reversedCombinedHand.sort === combinedHand)
     }
