@@ -107,7 +107,11 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case PlayedCardIllegal(card, playerId) =>
       client ! Out.PlayedCardIrregularly(card, playerId)
       become(activePlayer(card :: hand), discardOld = true)
-    case TakenCards(receivedCards, playerId) if playerId == id => become(playerMadeAction(hand:::receivedCards), discardOld = true)
+    case TakenCards(receivedCards, playerId) if playerId == id => become(playerWaitingForNextTurn(hand:::receivedCards), discardOld = true)
+    case message => log.debug(s"received $message")
+  }
+
+  def playerWaitingForNextTurn(hand: Hand): Receive = {
     case NextTurn(playerId) if playerId == id => become(activePlayer(hand), discardOld = true)
     case NextTurn => become(inactivePlayer(hand), discardOld = true)
     case message => log.debug(s"received $message")
@@ -116,7 +120,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
   def changeSuit(hand: Hand): Receive = {
     case In.SelectSuitRequest(suit) =>
       tableActor ! ChangeSuit(suit, id)
-      become(playerMadeAction(hand), discardOld = true)
+      become(playerWaitingForNextTurn(hand), discardOld = true)
     case message => log.debug(s"received $message")
   }
 
