@@ -26,7 +26,9 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case TakenCards(hand, playerId) =>
       log.info(s"Player $playerId receives ${hand.size} cards")
       client ! Out.ReceiveCardOpponent(hand.size, playerId)
-    case message => log.error(s"Unknown message $message")
+    case _: In.Incoming => client ! Out.WrongAction
+    case message =>
+      log.error(s"Unknown message $message")
   }
 
   /**
@@ -70,7 +72,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       val (cardOption, newHand) = hand.play(card)
       cardOption.foreach(playedCard => tableActor ! PlayCard(playedCard, id))
       become(playerMadeAction(newHand), discardOld = true)
-    case In.PlayCardRequest =>
+    case In.PlayCardRequest(_) =>
       log.error("Client tries to play a card we don't have!")
       client ! Out.WrongAction
     case In.TakeCardsRequest =>
@@ -100,6 +102,8 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case ChangeSuitRequest =>
       client ! Out.SelectSuitRequest
       become(changeSuit(hand), discardOld = true)
+    case PlayedCard(card, playerId) =>
+      client ! Out.PlayedCardSuccessfully(card, playerId)
     case PlayedCardIllegal(card, playerId) =>
       client ! Out.PlayedCardIrregularly(card, playerId)
       become(activePlayer(card :: hand), discardOld = true)
