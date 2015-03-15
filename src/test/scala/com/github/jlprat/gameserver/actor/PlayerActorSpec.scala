@@ -122,7 +122,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       assert(playerActor.underlyingActor.playersHand === playerHand)
     }
     "After this," can {
-      "either play a card" when {
+      "play a card" when {
         val playerActor = giveMeAPlayerInTurn(2)
         "not in hand, client must be notified" in {
           playerActor ! In.PlayCardRequest(Card(2, 2, "red"))
@@ -136,11 +136,20 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
           tableActorProbe.expectMsg(PlayCard(cardInHand, playerId = 2))
         }
       }
-      "or ask for more cards" in {
+      "ask for more cards" in {
         val playerActor = giveMeAPlayerInTurn(2)
         playerActor ! In.TakeCardsRequest
         tableActorProbe.expectMsg(TakeCard(playerId = 2))
         assert(playerActor.underlyingActor.playersHand === playerHand)
+      }
+      "not announce last card" when {
+        "it's not their last card" in {
+          val playerActor = giveMeAPlayerInTurn(2)
+          playerActor ! In.AnnounceLastCard
+          tableActorProbe.expectMsg(TakeCard(playerId = 2))
+          clientActorProbe.expectMsg(Out.WrongAction)
+          assert(playerActor.underlyingActor.playersHand === playerHand)
+        }
       }
     }
   }
