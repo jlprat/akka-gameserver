@@ -136,7 +136,7 @@ object Protocol {
    * The new suit of the top card is the one specified
    * @param suit the new suit of the top card
    */
-  case class ChangedSuit(suit: String)
+  case class ChangedSuit(suit: String, playerId: Int)
 
 
   /**

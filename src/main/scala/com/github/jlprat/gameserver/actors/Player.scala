@@ -56,6 +56,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       tableActor ! TakeCard(id)
       client ! Out.WrongAction
       become(playerMadeAction(), discardOld = true)
+    case ChangedSuit(suit, playerId) => client ! Out.NewSuitSelected(suit, playerId)
     case _ : In.Incoming =>
       log.error("Not your turn")
       client ! Out.NotInTurn
@@ -100,8 +101,8 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
    * @return
    */
   def playerMadeAction(): Receive = {
-    case ChangeSuitRequest =>
-      client ! Out.SelectSuitRequest
+    case ChangeSuitRequest(playerId) =>
+      client ! Out.SelectSuitRequest(playerId)
       become(changeSuit(), discardOld = true)
     case PlayedCard(card, playerId) =>
       client ! Out.PlayedCardSuccessfully(card, playerId)
@@ -111,6 +112,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       become(activePlayer(), discardOld = true)
     case TakenCards(receivedCards, playerId) if playerId == id =>
       playersHand = playersHand ::: receivedCards
+      client ! Out.ReceiveCard(receivedCards, playerId)
       become(playerWaitingForNextTurn(), discardOld = true)
     case message => log.debug(s"received $message")
   }
@@ -118,6 +120,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
   def playerWaitingForNextTurn(): Receive = {
     case NextTurn(playerId) if playerId == id => become(activePlayer(), discardOld = true)
     case NextTurn => become(inactivePlayer(), discardOld = true)
+    case ChangedSuit(suit, playerId) => client ! Out.NewSuitSelected(suit, playerId)
     case message => log.debug(s"received $message")
   }
 

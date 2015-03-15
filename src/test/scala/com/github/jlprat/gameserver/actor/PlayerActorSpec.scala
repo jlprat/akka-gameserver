@@ -35,10 +35,11 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     clientActorProbe.expectMsg(Out.ReceiveCard(playerHand, playerId = id))
     playerActor ! NextTurn(playerId = id)
     clientActorProbe.expectMsg(Out.PlayerInTurn(playerId = id))
+    assert(playerActor.underlyingActor.playersHand === playerHand)
     playerActor
   }
 
-  "A player starts with inactive state," when {
+  "A player starts without cards," when {
     "receives any message except a TakenCards" must {
       val playerActor = giveMeAPlayerActor()
       "log the message received" in {
@@ -178,6 +179,56 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
         clientActorProbe.expectMsg(Out.PlayedCardIrregularly(cardPlayed, playerId = 3))
         assert(playerActor.underlyingActor.playersHand.sort === playerHand.sort)
       }
+    }
+  }
+
+  "Once a player requested some cards" when {
+    "table decides to send only 1 card" must {
+      val playerActor = giveMeAPlayerInTurn(3)
+      playerActor ! In.TakeCardsRequest
+      tableActorProbe.expectMsg(TakeCard(playerId = 3))
+      assert(playerActor.underlyingActor.playersHand === playerHand)
+      "send cards to player" in {
+        val incomingCard = Card(10, 1, "red")
+        playerActor ! TakenCards(Hand(incomingCard), playerId = 3)
+        clientActorProbe.expectMsg(Out.ReceiveCard(Hand(incomingCard), playerId = 3))
+        assert(playerActor.underlyingActor.playersHand === (playerHand ::: Hand(incomingCard)))
+      }
+    }
+    "table decides to send only multiple cards" must {
+      val playerActor = giveMeAPlayerInTurn(3)
+      playerActor ! In.TakeCardsRequest
+      tableActorProbe.expectMsg(TakeCard(playerId = 3))
+      assert(playerActor.underlyingActor.playersHand === playerHand)
+      "send cards to player" in {
+        val incomingHand = Hand(List(Card(10, 1, "red"), Card(20, 2, "yellow")))
+        playerActor ! TakenCards(incomingHand, playerId = 3)
+        clientActorProbe.expectMsg(Out.ReceiveCard(incomingHand, playerId = 3))
+        assert(playerActor.underlyingActor.playersHand === (playerHand ::: incomingHand))
+      }
+    }
+  }
+
+  "A player can chose the suit" when {
+    "plays any 8" should {
+      val playerActor = giveMeAPlayerInTurn(4)
+      val eight: Card = Card(8, 8, "blue")
+      playerActor.underlyingActor.playersHand = eight :: playerActor.underlyingActor.playersHand
+      playerActor ! In.PlayCardRequest(eight)
+      tableActorProbe.expectMsg(PlayCard(eight, playerId = 4))
+      playerActor ! ChangeSuitRequest(playerId = 4)
+      clientActorProbe.expectMsg(Out.SelectSuitRequest(playerId = 4))
+      "select the suit" in {
+        playerActor ! In.PlayCardRequest(Card(0, 0, "blue"))
+        tableActorProbe.expectNoMsg(FiniteDuration(100, TimeUnit.MILLISECONDS))
+        assert(playerActor.underlyingActor.playersHand === playerHand)
+        playerActor ! In.SelectSuitRequest(suit = "yellow")
+        tableActorProbe.expectMsg(ChangeSuit(suit = "yellow", playerId = 4))
+
+        playerActor ! ChangedSuit("yellow", playerId = 4)
+        clientActorProbe.expectMsg(Out.NewSuitSelected("yellow", playerId = 4))
+      }
+
     }
   }
 
