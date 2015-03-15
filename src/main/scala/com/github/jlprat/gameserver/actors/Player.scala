@@ -2,6 +2,8 @@ package com.github.jlprat.gameserver.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 
+import scala.concurrent.duration.FiniteDuration
+
 /**
  * An actor that models a player
  * @param id the id of the player (given by your father)
@@ -45,11 +47,11 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case NextTurn(playerId) if playerId == id =>
       log.info(s"I receive a Next Turn message for me")
       client ! Out.PlayerInTurn(playerId)
+      //system.scheduler.scheduleOnce(duration, self, PlayerTimeOut)
       become(activePlayer(), discardOld = true)
     case NextTurn(playerId) =>
       log.info(s"I receive a Next Turn message for $playerId")
       client ! Out.PlayerInTurn(playerId)
-    case In.Leave => tableActor ! Leave(id)
     case In.AnnounceLastCard if playersHand.size == 1 =>
       tableActor ! AnnounceLastCard(id)
     case In.AnnounceLastCard if playersHand.size > 1 =>
