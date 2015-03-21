@@ -132,12 +132,6 @@ object ClientProtocol {
     case class NewSuitSelected(suit: String, playerId: Int)
 
     /**
-     * Client is informed about who is the next client in turn
-     * @param playerId the player in turn
-     */
-    case class NextPlayerInTurn(playerId: Int)
-
-    /**
      * Client is informed about a client leaving the game
      * @param playerId the player who left
      */

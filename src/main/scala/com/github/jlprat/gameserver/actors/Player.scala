@@ -1,6 +1,6 @@
 package com.github.jlprat.gameserver.actors
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Cancellable, Actor, ActorLogging, ActorRef}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -9,7 +9,7 @@ import scala.concurrent.duration.FiniteDuration
  * @param id the id of the player (given by your father)
  * @param tableActor the actor that models the table the player is playing
  */
-class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) extends Actor with ActorLogging {
+class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef, val duration: FiniteDuration) extends Actor with ActorLogging {
 
   import com.github.jlprat.gameserver.protocol.ClientProtocol._
   import com.github.jlprat.gameserver.protocol.Protocol._
@@ -17,6 +17,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
   import context._
 
   var playersHand = Hand()
+  var turnTimer: Option[Cancellable] = None
 
   /**
    * state where the player waits for getting the cards dealt
@@ -47,7 +48,7 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
     case NextTurn(playerId) if playerId == id =>
       log.info(s"I receive a Next Turn message for me")
       client ! Out.PlayerInTurn(playerId)
-      //system.scheduler.scheduleOnce(duration, self, PlayerTimeOut)
+      turnTimer = Some(system.scheduler.scheduleOnce(duration, self, PlayerTimeOut(playerId = id)))
       become(activePlayer(), discardOld = true)
     case NextTurn(playerId) =>
       log.info(s"I receive a Next Turn message for $playerId")
@@ -81,20 +82,22 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       log.error("Client tries to play a card we don't have!")
       client ! Out.WrongAction
     case In.TakeCardsRequest =>
-      tableActor ! TakeCard(id)
+      tableActor ! TakeCard(playerId = id)
       become(playerMadeAction(), discardOld = true)
     case In.Leave =>
       tableActor ! Leave(id)
       become(leftPlayer, discardOld = true)
     case In.AnnounceLastCard if playersHand.size == 1 =>
-      tableActor ! AnnounceLastCard(id)
+      tableActor ! AnnounceLastCard(playerId = id)
     case In.AnnounceLastCard if playersHand.size > 1 =>
-      tableActor ! TakeCard(id)
+      tableActor ! TakeCard(playerId = id)
       client ! Out.WrongAction
       become(playerMadeAction(), discardOld = true)
     case NextTurn(playerId) if playerId != id =>
-      //TODO this should be a clear corner case once the timers are installed
       log.error("I am out of sync, or somebody impersonated me!")
+    case PlayerTimeOut(_) =>
+      tableActor ! TakeCard(playerId = id)
+      become(playerMadeAction(), discardOld = true)
     case message => log.debug(s"received $message")
   }
 
@@ -116,19 +119,36 @@ class Player (val id: Int, val tableActor: ActorRef, val client: ActorRef) exten
       playersHand = playersHand ::: receivedCards
       client ! Out.ReceiveCard(receivedCards, playerId)
       become(playerWaitingForNextTurn(), discardOld = true)
+    case PlayerTimeOut(_) =>
+      log.info("I'm waiting for table to answer me!")
+      //TODO table answer might come in a moment or we are out of sync!
     case message => log.debug(s"received $message")
   }
 
   def playerWaitingForNextTurn(): Receive = {
-    case NextTurn(playerId) if playerId == id => become(activePlayer(), discardOld = true)
-    case NextTurn => become(inactivePlayer(), discardOld = true)
+    case NextTurn(playerId) if playerId == id =>
+      turnTimer.map(_.cancel())
+      turnTimer = Some(system.scheduler.scheduleOnce(duration, self, PlayerTimeOut(playerId = id)))
+      client ! Out.PlayerInTurn(playerId)
+      become(activePlayer(), discardOld = true)
+    case NextTurn(playerId) =>
+      turnTimer.map(_.cancel())
+      turnTimer= None
+      client ! Out.PlayerInTurn(playerId)
+      become(inactivePlayer(), discardOld = true)
     case ChangedSuit(suit, playerId) => client ! Out.NewSuitSelected(suit, playerId)
+    case PlayerTimeOut(_) =>
+      log.info("I'm waiting for table to answer me!")
+    //TODO table answer might come in a moment or we are out of sync!
     case message => log.debug(s"received $message")
   }
 
   def changeSuit(): Receive = {
     case In.SelectSuitRequest(suit) =>
       tableActor ! ChangeSuit(suit, id)
+      become(playerWaitingForNextTurn(), discardOld = true)
+    case PlayerTimeOut(_) =>
+      tableActor ! ChangeSuit("blue", id)
       become(playerWaitingForNextTurn(), discardOld = true)
     case message => log.debug(s"received $message")
   }
