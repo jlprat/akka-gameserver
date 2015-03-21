@@ -8,11 +8,11 @@ import scala.concurrent.duration.FiniteDuration
  * An actor that models a player, this actor is responsible for anything that relates to a player and its turn.
  * It doesn't know though, most of the specific rules of the game.
  * The PlayerActor is responsible of:
- * <ol>
+ * <ul>
  *   <li>Maintaining their state machine</li>
  *   <li>Keep their hand up to date</li>
  *   <li>Managing their turn time outs</li>
- * </ol>
+ * </ul>
  * This implementation models a state machine using become. As it can be seen, it contains pretty much redundancy
  * as all actions that can occur at any point in time must be handled in any Receive block
  * @param id the id of the player (given by your father)

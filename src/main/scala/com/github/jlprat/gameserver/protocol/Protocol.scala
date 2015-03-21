@@ -28,6 +28,11 @@ object Protocol {
    */
   case class PlayedCardIllegal(card: Card, playerId: Int)
 
+  /**
+   * Notification to players that inform which card is on the top of the discard pile
+   * @param card
+   */
+  case class TopCard(card: Card)
 
   /**
    * Player asks for a new card
