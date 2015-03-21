@@ -23,7 +23,6 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   "After creation, a table" should {
     val (table, playerProbes) = giveMeATable(3, 1)
-    //val generatedDeck = table.underlyingActor.generateDeck(1)
     "deal cards to players" in {
       playerProbes.foreach {
         case (probe, _) => {
