@@ -29,6 +29,10 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
         case (probe, _) => {
           probe.expectMsg(TakenCards(Hand(List(Card(45, 4, "green"), Card(27, 12, "yellow"), Card(25, 10, "yellow"),
             Card(34, 6, "red"), Card(12, 10, "blue"), Card(36, 8, "red"))), playerId = 0))
+          probe.expectMsg(TakenCards(Hand(List(Card(17, 2, "yellow"), Card(33, 5, "red"), Card(26, 11, "yellow"),
+            Card(41, 13, "red"), Card(42, 1, "green"), Card(7, 5, "blue"))), playerId = 1))
+          probe.expectMsg(TakenCards(Hand(List(Card(29, 1, "red"), Card(30, 2, "red"), Card(10, 8, "blue"),
+            Card(40, 12, "red"), Card(46, 5, "green"), Card(6, 4, "blue"))), playerId = 2))
         }
       }
     }
