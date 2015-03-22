@@ -98,6 +98,20 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       }
     }
   }
+  
+  "A player" must {
+    "be informed about the top card" when {
+      "is in the inactive state" in {
+        val (playerActor, _, clientActorProbe) = giveMeAPlayerActor(id = 20)
+        playerActor ! TakenCards(playerHand, playerId = 20)
+        assert(playerActor.underlyingActor.playersHand === playerHand)
+        clientActorProbe.expectMsg(Out.ReceiveCard(playerHand, playerId = 20))
+        val aCard = Card(30, 1, "yellow")
+        playerActor ! TopCard(aCard)
+        clientActorProbe.expectMsg(Out.TopCard(aCard))
+      }
+    }
+  }
 
   "After dealt, a not in turn player" can {
     val (playerActor, tableActorProbe, clientActorProbe) = giveMeAPlayerActor(id = 2)

@@ -51,6 +51,12 @@ object ClientProtocol {
   object Out {
 
     /**
+     * Client is informed about the top card in the discard pile
+     * @param card card in the top of the discard pile
+     */
+    case class TopCard(card: Card)
+
+    /**
      * Client is notified about the last message sent is not possible, maybe tried the wrong card
      */
     case object WrongAction

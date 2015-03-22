@@ -53,6 +53,7 @@ class Player (val id: Int, val tableActor: ActorRef, val clientActor: ActorRef, 
    * @return
    */
   def inactivePlayer(): Receive = {
+    case TopCard(card) => clientActor ! Out.TopCard(card)
     case TakenCards(hand, playerId) if playerId != id =>
       log.info(s"Player $playerId receives ${hand.size} cards")
       clientActor ! Out.ReceiveCardOpponent(hand.size, playerId)
