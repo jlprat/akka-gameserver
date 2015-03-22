@@ -4,7 +4,7 @@ import akka.actor.{Props, ActorSystem}
 import akka.testkit._
 import com.github.jlprat.gameserver.actors.Table
 import com.github.jlprat.gameserver.model._
-import com.github.jlprat.gameserver.protocol.Protocol.{TakenCards, TopCard}
+import com.github.jlprat.gameserver.protocol.Protocol.{NextTurn, TakenCards, TopCard}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 /**
@@ -23,6 +23,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   "After creation, a table" should {
     val (table, playerProbes) = giveMeATable(3, 1)
+    table ! Table.Initialize
     "deal cards to players" in {
       playerProbes.foreach {
         case (probe, _) => {
@@ -36,7 +37,18 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       }
     }
     "put a card in the top of the discard pile" in {
-      table.underlyingActor.topCard.foreach(topCard => assert(topCard === Card(16, 1, "yellow")))
+      val topCard = Card(16, 1, "yellow")
+      table.underlyingActor.topCard.foreach(topCard => {
+        assert(topCard === topCard)
+      })
+      playerProbes.foreach {
+        case (probe, _) => probe.expectMsg(TopCard(topCard))
+      }
+    }
+    "Decide who is the first player in turn" in {
+      playerProbes.foreach {
+        case (probe, _) => probe.expectMsg(NextTurn(0))
+      }
     }
   }
 }

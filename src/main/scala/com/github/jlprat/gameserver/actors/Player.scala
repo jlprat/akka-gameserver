@@ -22,6 +22,8 @@ import scala.concurrent.duration.FiniteDuration
  */
 class Player (val id: Int, val tableActor: ActorRef, val clientActor: ActorRef, val turnDuration: FiniteDuration) extends Actor with ActorLogging {
 
+  //TODO last card is incomplete (no handling of not calling last card)
+
   import com.github.jlprat.gameserver.protocol.ClientProtocol._
   import com.github.jlprat.gameserver.protocol.Protocol._
   import com.github.jlprat.gameserver.model._
