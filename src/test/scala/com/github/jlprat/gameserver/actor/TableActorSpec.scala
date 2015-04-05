@@ -4,7 +4,9 @@ import akka.actor.{Props, ActorSystem}
 import akka.testkit._
 import com.github.jlprat.gameserver.actors.Table
 import com.github.jlprat.gameserver.model._
-import com.github.jlprat.gameserver.protocol.Protocol.{NextTurn, TakenCards, TopCard}
+import com.github.jlprat.gameserver.protocol.ClientProtocol.Out.WrongAction
+import com.github.jlprat.gameserver.protocol.Protocol._
+import scala.concurrent.duration._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 /**
@@ -21,6 +23,20 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     (TestActorRef(Props(classOf[Table], players.map(x => (x._1.ref, x._2)), seed)), players)
   }
 
+  def giveMeAnInitTable(numberPlayers: Int, seed: Long):(TestActorRef[Table], List[(TestProbe, Int)]) = {
+    val (table, playersTuple) = giveMeATable(numberPlayers, seed)
+    table ! Table.Initialize
+    playersTuple.foreach {
+      case (probe, _) =>
+        List.range(0, numberPlayers).foreach(_ => probe.expectMsgClass(classOf[TakenCards]))
+        probe.expectMsgClass(classOf[TopCard])
+        probe.expectMsgClass(classOf[NextTurn])
+    }
+    (table, playersTuple)
+  }
+
+  val initialTopCard = Card(50, 9, "green")
+
   "After creation, a table" should {
     val (table, playerProbes) = giveMeATable(3, 1)
     table ! Table.Initialize
@@ -36,12 +52,11 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       }
     }
     "put a card in the top of the discard pile" in {
-      val topCard = Card(50, 9, "green")
       table.underlyingActor.discardPile.topCard.foreach(topCard => {
-        assert(topCard === topCard)
+        assert(topCard === initialTopCard)
       })
       playerProbes.foreach {
-        case (probe, _) => probe.expectMsg(TopCard(topCard))
+        case (probe, _) => probe.expectMsg(TopCard(initialTopCard))
       }
     }
     "decide who is the first player in turn" in {
@@ -66,6 +81,43 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       playerProbes.foreach {
         case (probe, _) => probe.expectMsg(TopCard(Card(21, 6,"yellow")))
       }
+    }
+  }
+
+  "Player receives Wrong Action" when {
+    "table is initialized and player is not in turn" when {
+      "asks for cards" in {
+        val (table, playerProbes) = giveMeAnInitTable(3, 1)
+        table ! TakeCard(playerId = 1)
+        playerProbes.foreach{
+          case (probe, id) if id == 1 => probe.expectMsg(WrongAction)
+          case (probe, _) => probe.expectNoMsg(50 milliseconds)
+        }
+      }
+      "plays any card" in {
+        val (table, playerProbes) = giveMeAnInitTable(3, 1)
+        table ! PlayCard(Card(32, 4, "red"), playerId = 1)
+        playerProbes.foreach{
+          case (probe, id) if id == 1 => probe.expectMsg(WrongAction)
+          case (probe, _) => probe.expectNoMsg(50 milliseconds)
+        }
+      }
+    }
+  }
+
+  "Player receives only 1 card" when {
+    "player Takes a card and they are in turn" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      table ! TakeCard(playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(TakenCards(Hand(Card(4, 2, "blue")), playerId = 0))
+          probe.expectMsg(NextTurn(1))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === initialTopCard)
+      })
+      assert(table.underlyingActor.deck.size === 34)
     }
   }
 }
