@@ -33,4 +33,9 @@ case class DiscardPile (protected[model] val cards: List[Card]) {
    */
   def size: Int = cards.size
 
+  /**
+   * @return the top card of the discard pile if there is any
+   */
+  def topCard: Option[Card] = cards.headOption
+
 }

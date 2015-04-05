@@ -22,7 +22,7 @@ class DeckSpec extends WordSpec{
   }
   "A deck" can {
     "be created empty" in {
-      assert(Deck.empty().size === 0)
+      assert(Deck.empty.size === 0)
     }
     "be created from a list of Cards" in {
       assert(Deck(cards).size === cards.size)
@@ -141,10 +141,10 @@ class DeckSpec extends WordSpec{
     }
     "empty" should {
       "not let me pick a card" in {
-        assert(Deck.empty().take(1).isEmpty)
+        assert(Deck.empty.take(1).isEmpty)
       }
       "not let me draw cards to players" in {
-        assert(Deck.empty().draw(2,4).isEmpty)
+        assert(Deck.empty.draw(2,4).isEmpty)
       }
     }
   }

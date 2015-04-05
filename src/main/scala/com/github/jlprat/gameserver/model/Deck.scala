@@ -12,7 +12,7 @@ object Deck {
    * Creates an empty Deck, this is, with no cards
    * @return the empty Deck
    */
-  def empty() = new Deck(List())
+  def empty = new Deck(List())
 }
 
 /**

@@ -38,7 +38,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     }
     "put a card in the top of the discard pile" in {
       val topCard = Card(16, 1, "yellow")
-      table.underlyingActor.topCard.foreach(topCard => {
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
         assert(topCard === topCard)
       })
       playerProbes.foreach {

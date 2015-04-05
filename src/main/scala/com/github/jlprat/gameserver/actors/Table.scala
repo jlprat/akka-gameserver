@@ -1,8 +1,7 @@
 package com.github.jlprat.gameserver.actors
 
 import akka.actor.{ActorRef, Actor}
-import com.github.jlprat.gameserver.protocol.ClientProtocol.Out.WrongAction
-import com.github.jlprat.gameserver.protocol.Protocol.{TopCard, TakenCards}
+import com.github.jlprat.gameserver.model.{DiscardPile, Hand}
 
 object Table {
 
@@ -44,31 +43,23 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
   }
 
   var deck = generateDeck(seed)
-  var topCard: Option[Card]= None
+  var discardPile = DiscardPile.empty
   var activePlayers = players.toVector
   var activePlayerId = 0
-  var choosenSuit: Option[String] = None
+  var chosenSuit: Option[String] = None
 
-  def drawCards: Unit = {
+  def drawCards: Option[(Deck, Iterable[(Hand, Int)])] = {
     val drawResult = deck.draw(activePlayers.size, 6, 2)
-    drawResult.foreach {
+    drawResult.map {
       case (hands, rest) =>
-        deck = rest
-        hands.zip(activePlayers.map(_._2)).foreach {
-          case (hand, playerId) =>
-            activePlayers.map(_._1).foreach(_ ! TakenCards(hand, playerId))
-        }
+        (rest, hands.zip(activePlayers.map(_._2)))
     }
   }
-  def placeTopCard:Unit = {
-    //TODO draw another card, if the top one is special?
-    deck.take(1).foreach{
-      case (hand, rest) =>
-        deck = rest
-        topCard = hand.cards.headOption.map(card => {
-          activePlayers.map(_._1).foreach(_ ! TopCard(card))
-          card
-        })
+
+  def placeTopCard: Option[(Deck, DiscardPile)] = {
+    //TODO draw another card, if the top one is "take 2", "Change color" "skip" "again" "change direction"?
+    deck.take(1).map{
+      case (hand, rest) => (deck, DiscardPile(hand.cards))
     }
   }
 
@@ -83,8 +74,19 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
 
   val initialState: Receive = {
     case Initialize =>
-      drawCards
-      placeTopCard
+      drawCards.foreach {
+        case (remainingDeck, cards) =>
+          deck = remainingDeck
+          cards.foreach{
+            case (hand, playerId) => activePlayers.map(_._1).foreach(_ ! TakenCards(hand, playerId))
+          }
+      }
+      placeTopCard.foreach {
+        case(remainingDeck, cardsToPutOnTop) =>
+          deck = remainingDeck
+          discardPile = cardsToPutOnTop
+      }
+      discardPile.topCard.foreach(card => activePlayers.map(_._1).foreach(_ ! TopCard(card)))
       val playerIdInTurn = activePlayers(activePlayerId)._2
       activePlayers.foreach{
         case (player,_) => player ! NextTurn(playerIdInTurn)
