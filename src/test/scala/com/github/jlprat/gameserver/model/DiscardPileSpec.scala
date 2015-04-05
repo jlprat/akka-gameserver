@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.model {
+package com.github.jlprat.gameserver.model
 
 import org.scalatest.WordSpec
 
@@ -30,23 +30,3 @@ class DiscardPileSpec extends WordSpec {
     }
   }
 }
-
-}
-
-package foo {
-  import org.scalatest.WordSpec
-
-  class DiscardPileSpec extends WordSpec {
-
-    import com.github.jlprat.gameserver.model._
-
-    "access to inner state is protected" in {
-      assertDoesNotCompile(
-        """
-        val discardPile = Card(2, 2, "suit") :: DiscardPile(Card(1, 1, "suit"))
-        discardPile.cards
-        """.stripMargin)
-    }
-  }
-}
-
