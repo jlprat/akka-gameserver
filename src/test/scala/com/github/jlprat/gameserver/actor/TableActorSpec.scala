@@ -120,4 +120,67 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       assert(table.underlyingActor.deck.size === 34)
     }
   }
+
+  "Player plays a card successfully" when {
+    "they are in turn and card is green" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-49, 4, "green")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(NextTurn(1))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+      assert(table.underlyingActor.deck.size === 35)
+    }
+    "they are in turn and card is 9" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-50, 9, "blue")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(NextTurn(1))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+      assert(table.underlyingActor.deck.size === 35)
+    }
+    "they are in turn and card is a joker" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-51, 0, "joker")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(NextTurn(1))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+      assert(table.underlyingActor.deck.size === 35)
+    }
+    "they are in turn and card is any 8" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-52, 8, "blue")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(NextTurn(1))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+      assert(table.underlyingActor.deck.size === 35)
+    }
+  }
 }

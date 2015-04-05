@@ -127,6 +127,7 @@ class Player (val id: Int, val tableActor: ActorRef, val clientActor: ActorRef, 
       become(changeSuit(), discardOld = true)
     case PlayedCard(card, playerId) =>
       clientActor ! Out.PlayedCardSuccessfully(card, playerId)
+      become(playerWaitingForNextTurn(), discardOld = true)
     case PlayedCardIllegal(card, playerId) =>
       clientActor ! Out.PlayedCardIrregularly(card, playerId)
       playersHand = card :: playersHand

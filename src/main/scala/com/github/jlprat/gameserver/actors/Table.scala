@@ -125,7 +125,14 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
    * @return ´true´ if the card can be played, ´false´ otherwise.
    */
   def validPlay(card: Card): Boolean = {
-    true
+    discardPile.topCard.forall(_ match {
+      case Card(_, _, suit) if suit == card.suit => true
+      case Card(_, rank, _) if rank == card.rank => true
+      case Card(_, _, "joker") => true
+      case _ if card.suit == "joker" => true
+      case _ if card.rank == 8 => true
+      case _ => false
+    })
   }
 
   /**
@@ -176,7 +183,13 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
       }
     case TakeCard(playerId) =>
       findPlayerById(playerId).foreach(_ ! WrongAction)
-    case PlayCard(card, playerId) if playerId == activePlayerId && validPlay(card) => ???
+    case PlayCard(card, playerId) if playerId == activePlayerId && validPlay(card) =>
+      discardPile = card :: discardPile
+      broadcast(PlayedCard(card, playerId))
+      val playerIdInTurn = nextPlayerInTurn(1)
+      broadcast(NextTurn(playerIdInTurn))
+    case PlayCard(card, playerId) if playerId == activePlayerId =>
+      broadcast(PlayedCardIllegal(card, playerId))
     case PlayCard(_, playerId) =>
       findPlayerById(playerId).foreach(_ ! WrongAction)
   }
