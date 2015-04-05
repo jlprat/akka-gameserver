@@ -19,7 +19,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   def this() = this(ActorSystem("GameServerSpec"))
 
-  val turnDuration = 300 milliseconds
+  val turnDuration = 400 milliseconds
   val eight: Card = Card(8, 8, "blue")
   val playerHand = Hand(List.tabulate(5)(elem => Card(elem, elem, "blue")))
 
@@ -290,7 +290,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       "Take Cards be sent" in {
         val (playerActor, tableActorProbe, _) = giveMeAPlayerInTurn(6)
         assert(playerActor.underlyingActor.turnTimer.isDefined)
-        within(400 milliseconds) {
+        within(450 milliseconds) {
           tableActorProbe.expectMsg(TakeCard(playerId = 6))
         }
       }
@@ -305,7 +305,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
         tableActorProbe.expectMsg(PlayCard(eight, playerId = 6))
         playerActor ! ChangeSuitRequest(playerId = 6)
         clientActorProbe.expectMsg(Out.SelectSuitRequest(playerId = 6))
-        within(400 milliseconds) {
+        within(450 milliseconds) {
           tableActorProbe.expectMsg(ChangeSuit(suit = "blue", playerId = 6))
         }
       }
