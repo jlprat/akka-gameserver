@@ -84,6 +84,18 @@ case class Deck(protected[model] val deck: List[Card]) {
     }
   }
 
+  /**
+   * Takes cards until the predicate {@code p} is satisfied, all cards until finding the card that satisfies {@code p}
+   * are also included in the result
+   * @param p a predicate that must be run against the cards of the deck
+   * @return None if there is no card in the deck that satisfies {@code p}. Some[Hand, Deck] with all the cards drawn
+   *      from the deck until a card that satisfies {@code p} is drawn, and the remaining deck
+   */
+  def takeUntil(p: Card => Boolean): Option[(Hand, Deck)] = {
+    val takenCards = deck.takeWhile(!p(_))
+    take(takenCards.size + 1)
+  }
+
   override def toString = {
     "Deck [" + deck.mkString(",") + "]"
   }

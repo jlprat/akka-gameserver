@@ -164,4 +164,31 @@ class DeckSpec extends WordSpec{
     }
   }
 
+  "A deck takeUntilFalse" must {
+    "return None" when {
+      "the predicate is not true for all cards in the Deck" in {
+        val result = deck.takeUntil(_.suit == "notThere")
+        assert(result.isEmpty)
+      }
+    }
+    "return only 1 card" when {
+      "the predicate is true for the first card drawn" in {
+        val result = deck.takeUntil(_.id == 0)
+        assert(result.isDefined)
+        assert(result.forall{
+          case (hand, remainingDeck) => hand.size == 1 && remainingDeck.size == numberCards - 1
+        })
+      }
+    }
+    "return more than 1 card" when {
+      "the predicate is true for a card that is not the first one" in {
+        val result = deck.takeUntil(_.id == 4)
+        assert(result.isDefined)
+        assert(result.forall{
+          case (hand, remainingDeck) => hand.size == 5 && remainingDeck.size == numberCards - 5
+        })
+      }
+    }
+  }
+
 }
