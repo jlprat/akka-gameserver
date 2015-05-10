@@ -190,11 +190,42 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     "play an Ace" in {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
       //Top card is 9 "green"
-      val playedCard = Card(-52, 1, "green")
+      val playedCard = Card(-53, 1, "green")
       table ! PlayCard(playedCard, playerId = 0)
       playerProbes.foreach {
         case (probe, _) =>
           probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(SkipPlayer(playerId = 1))
+          probe.expectMsg(NextTurn(playerId = 2))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+    }
+    "play a 10" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-54, 10, "green")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(PlayAgain(playerId = 0))
+          probe.expectMsg(NextTurn(playerId = 0))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+    }
+    "play a Jack" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-55, 11, "green")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(ChangeDirection(clockwise = false))
           probe.expectMsg(NextTurn(playerId = 2))
       }
       table.underlyingActor.discardPile.topCard.foreach(topCard => {

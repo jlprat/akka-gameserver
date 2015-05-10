@@ -1,6 +1,6 @@
 package com.github.jlprat.gameserver.actors
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{ActorLogging, ActorRef, Actor}
 import com.github.jlprat.gameserver.model.{DiscardPile, Hand}
 import com.github.jlprat.gameserver.protocol.ClientProtocol.Out.WrongAction
 
@@ -26,7 +26,7 @@ object Table {
  * @param players the players who will play on this table
  * @param seed the seed to randomize the deck
  */
-class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
+class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor with ActorLogging{
 
   import com.github.jlprat.gameserver.model.{Card, Deck}
   import com.github.jlprat.gameserver.protocol.Protocol._
@@ -142,18 +142,17 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
    * @return the mathematical output of ´i mod n´
    */
   def mod(i: Int, n: Int): Int = i % n match {
-    case x if x < 0 => n - x
+    case x if x < 0 => n + x
     case x => x
   }
 
   /**
-   * Calculates the next player in turn
+   * Calculates the next player index in turn
    * @param numberOfPlayersToSkip indicates how many players must be skipped. A zero means same player is in turn
-   * @return the ID of the next player
+   * @return the index of the next player
    */
-  def nextPlayerInTurn(numberOfPlayersToSkip: Int): Int = {
-    activePlayerIndex = mod(activePlayerIndex + (numberOfPlayersToSkip * direction), activePlayers.size)
-    activePlayerId
+  def nextPlayerIndex(numberOfPlayersToSkip: Int): Int = {
+    mod(activePlayerIndex + (numberOfPlayersToSkip * direction), activePlayers.size)
   }
 
   /**
@@ -171,26 +170,29 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
   def handleImpactOfCard(card: Card): Unit = card match {
     case Card(_, 2, _) =>
       penaltyCards = penaltyCards + 2
-      val playerIdInTurn = nextPlayerInTurn(1)
-      broadcast(NextTurn(playerIdInTurn))
+      activePlayerIndex = nextPlayerIndex(1)
+      broadcast(NextTurn(activePlayerId))
       context.become(withPenaltyCards, discardOld = true)
     case Card(_, 8, _) =>
       findPlayerById(activePlayerId).foreach(_ ! ChangeSuitRequest(activePlayerId))
       context.become(waitingForSuit,discardOld = true)
     case Card(_, 1, _) => //skip
-      val playerIdInTurn = nextPlayerInTurn(2)
-      broadcast(NextTurn(playerIdInTurn))
+      broadcast(SkipPlayer(activePlayers(nextPlayerIndex(1))._2))
+      activePlayerIndex = nextPlayerIndex(2)
+      broadcast(NextTurn(activePlayerId))
     case Card(_ , 10, _) => // Again
       broadcast(PlayAgain(activePlayerId))
       broadcast(NextTurn(activePlayerId))
     case Card(_, 11, _) => //Change direction
+      log.info(s"direction $direction")
       direction = changeDirection
+      log.info(s"direction $direction")
       broadcast(ChangeDirection(if (direction == 1) true else false))
-      val playerIdInTurn = nextPlayerInTurn(1)
-      broadcast(NextTurn(playerIdInTurn))
+      activePlayerIndex = nextPlayerIndex(1)
+      broadcast(NextTurn(activePlayerId))
     case _ =>
-      val playerIdInTurn = nextPlayerInTurn(1)
-      broadcast(NextTurn(playerIdInTurn))
+      activePlayerIndex = nextPlayerIndex(1)
+      broadcast(NextTurn(activePlayerId))
   }
 
   val withPenaltyCards: Receive = {
@@ -210,8 +212,8 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
         case (hand, deckAfter) =>
           deck = deckAfter
           broadcast(TakenCards(hand, activePlayerId))
-          val playerIdInTurn = nextPlayerInTurn(1)
-          broadcast(NextTurn(playerIdInTurn))
+          activePlayerIndex = nextPlayerIndex(1)
+          broadcast(NextTurn(activePlayerId))
       }
     case TakeCard(playerId) =>
       findPlayerById(playerId).foreach(_ ! WrongAction)
@@ -250,8 +252,8 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
           discardPile = cardsToPutOnTop
       }
       discardPile.topCard.foreach(card => broadcast(TopCard(card)))
-      val playerIdInTurn = nextPlayerInTurn(0)
-      broadcast(NextTurn(playerIdInTurn))
+      activePlayerIndex = nextPlayerIndex(0)
+      broadcast(NextTurn(activePlayerId))
       context.become(normalState, discardOld = true)
   }
 
