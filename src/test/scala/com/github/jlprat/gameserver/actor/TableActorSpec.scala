@@ -121,7 +121,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     }
   }
 
-  "Player plays a card successfully" when {
+  "Player plays a normal card successfully" when {
     "they are in turn and card is green" in {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
       //Top card is 9 "green"
@@ -167,20 +167,40 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
       })
       assert(table.underlyingActor.deck.size === 35)
     }
-    "they are in turn and card is any 8" in {
+  }
+
+  "A Player" can {
+    "play an 8 card" in {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
       //Top card is 9 "green"
       val playedCard = Card(-52, 8, "blue")
       table ! PlayCard(playedCard, playerId = 0)
       playerProbes.foreach {
+        case (probe, 0) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(ChangeSuitRequest(0))
         case (probe, _) =>
           probe.expectMsg(PlayedCard(playedCard, playerId = 0))
-          probe.expectMsg(NextTurn(1))
       }
       table.underlyingActor.discardPile.topCard.foreach(topCard => {
         assert(topCard === playedCard)
       })
       assert(table.underlyingActor.deck.size === 35)
     }
+    "play an Ace" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      //Top card is 9 "green"
+      val playedCard = Card(-52, 1, "green")
+      table ! PlayCard(playedCard, playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(PlayedCard(playedCard, playerId = 0))
+          probe.expectMsg(NextTurn(playerId = 2))
+      }
+      table.underlyingActor.discardPile.topCard.foreach(topCard => {
+        assert(topCard === playedCard)
+      })
+    }
   }
+
 }

@@ -148,7 +148,7 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
 
   /**
    * Calculates the next player in turn
-   * @param numberOfPlayersToSkip indicates how many players must be skipped
+   * @param numberOfPlayersToSkip indicates how many players must be skipped. A zero means same player is in turn
    * @return the ID of the next player
    */
   def nextPlayerInTurn(numberOfPlayersToSkip: Int): Int = {
@@ -161,20 +161,52 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
    * @return the new direction
    */
   def changeDirection: Int = {
-    direction = direction * -1
-    direction
+    direction * -1
   }
 
   def findPlayerById(id: Int): Option[ActorRef] = {
     activePlayers.find(_._2 == id).map(_._1)
   }
 
+  def handleImpactOfCard(card: Card): Unit = card match {
+    case Card(_, 2, _) =>
+      penaltyCards = penaltyCards + 2
+      val playerIdInTurn = nextPlayerInTurn(1)
+      broadcast(NextTurn(playerIdInTurn))
+      context.become(withPenaltyCards, discardOld = true)
+    case Card(_, 8, _) =>
+      findPlayerById(activePlayerId).foreach(_ ! ChangeSuitRequest(activePlayerId))
+      context.become(waitingForSuit,discardOld = true)
+    case Card(_, 1, _) => //skip
+      val playerIdInTurn = nextPlayerInTurn(2)
+      broadcast(NextTurn(playerIdInTurn))
+    case Card(_ , 10, _) => // Again
+      broadcast(PlayAgain(activePlayerId))
+      broadcast(NextTurn(activePlayerId))
+    case Card(_, 11, _) => //Change direction
+      direction = changeDirection
+      broadcast(ChangeDirection(if (direction == 1) true else false))
+      val playerIdInTurn = nextPlayerInTurn(1)
+      broadcast(NextTurn(playerIdInTurn))
+    case _ =>
+      val playerIdInTurn = nextPlayerInTurn(1)
+      broadcast(NextTurn(playerIdInTurn))
+  }
+
+  val withPenaltyCards: Receive = {
+    case _ =>
+  }
+
+  val waitingForSuit: Receive = {
+    case _ =>
+  }
+
   /**
-   * This Receive partial function models the state of the table where no special actions need to be taken
+   * This Receive partial function models the state of the table where no special card is on top
    */
   val normalState: Receive = {
     case TakeCard(playerId) if playerId == activePlayerId =>
-      deck.take(penaltyCards).foreach{
+      deck.take(1).foreach{
         case (hand, deckAfter) =>
           deck = deckAfter
           broadcast(TakenCards(hand, activePlayerId))
@@ -186,8 +218,7 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor{
     case PlayCard(card, playerId) if playerId == activePlayerId && validPlay(card) =>
       discardPile = card :: discardPile
       broadcast(PlayedCard(card, playerId))
-      val playerIdInTurn = nextPlayerInTurn(1)
-      broadcast(NextTurn(playerIdInTurn))
+      handleImpactOfCard(card)
     case PlayCard(card, playerId) if playerId == activePlayerId =>
       broadcast(PlayedCardIllegal(card, playerId))
     case PlayCard(_, playerId) =>
