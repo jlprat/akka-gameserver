@@ -39,8 +39,7 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor with Actor
   var activePlayerIndex = 0
   def activePlayerId = activePlayers(activePlayerIndex)._2
 
-  var chosenSuit: Option[String] = None
-  var penaltyCards = 1
+  var penaltyCards = 0
   //direction flag, 1 clockwise, -1 anti-clockwise
   var direction = 1
 
@@ -125,14 +124,14 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor with Actor
    * @return ´true´ if the card can be played, ´false´ otherwise.
    */
   def validPlay(card: Card): Boolean = {
-    discardPile.topCard.forall(_ match {
+    discardPile.topCard.forall {
       case Card(_, _, suit) if suit == card.suit => true
       case Card(_, rank, _) if rank == card.rank => true
       case Card(_, _, "joker") => true
       case _ if card.suit == "joker" => true
       case _ if card.rank == 8 => true
       case _ => false
-    })
+    }
   }
 
   /**
@@ -195,12 +194,64 @@ class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor with Actor
       broadcast(NextTurn(activePlayerId))
   }
 
+  /**
+   * This Receive partial function takes care of the state when the table is accumulating penalty cards
+   */
   val withPenaltyCards: Receive = {
-    case _ =>
+    case PlayCard(card @ Card(_, 2, _), playerId) if activePlayerId == playerId =>
+      penaltyCards = penaltyCards + 2
+      activePlayerIndex = nextPlayerIndex(1)
+      broadcast(NextTurn(activePlayerId))
+    case PlayCard(card, playerId) if activePlayerId == playerId =>
+      broadcast(PlayedCardIllegal(card, playerId))
+    case TakeCard(playerId) if activePlayerId == playerId =>
+      deck.take(penaltyCards).foreach{
+        case (hand, deckAfter) =>
+          deck = deckAfter
+          broadcast(TakenCards(hand, activePlayerId))
+          broadcast(NextTurn(activePlayerId))
+      }
+      penaltyCards = 0
+      context.become(normalState, discardOld = true)
   }
 
+  /**
+   * This Receive PF takes care of the state where the table is waiting for the player to pick a suit
+   */
   val waitingForSuit: Receive = {
-    case _ =>
+    case ChangeSuit(suit, playerId) if activePlayerId == playerId =>
+      broadcast(ChangedSuit(suit, playerId))
+      activePlayerIndex = nextPlayerIndex(1)
+      broadcast(NextTurn(activePlayerId))
+      context.become(overriddenSuit(suit), discardOld = true)
+    case msg => log.error(s"Didn't expect this message now: $msg")
+  }
+
+  /**
+   * This models the state when the top card is an 8 and the new suit is picked by the user
+   * @param suit the suit of the top card
+   * @return the Receive PF
+   */
+  def overriddenSuit(suit: String): Receive = {
+    case TakeCard(playerId) if playerId == activePlayerId =>
+      deck.take(1).foreach{
+        case (hand, deckAfter) =>
+          deck = deckAfter
+          broadcast(TakenCards(hand, activePlayerId))
+          activePlayerIndex = nextPlayerIndex(1)
+          broadcast(NextTurn(activePlayerId))
+      }
+    case TakeCard(playerId) =>
+      findPlayerById(playerId).foreach(_ ! WrongAction)
+    case PlayCard(card, playerId) if playerId == activePlayerId && card.suit == suit && card.rank != 8 =>
+      discardPile = card :: discardPile
+      broadcast(PlayedCard(card, playerId))
+      context.become(normalState, discardOld = true)
+      handleImpactOfCard(card)
+    case PlayCard(card, playerId) if playerId == activePlayerId =>
+      broadcast(PlayedCardIllegal(card, playerId))
+    case PlayCard(_, playerId) =>
+      findPlayerById(playerId).foreach(_ ! WrongAction)
   }
 
   /**
