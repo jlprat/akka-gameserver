@@ -241,6 +241,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     }
   }
 
+  //Change Suit consequences
   "After playing an 8, a Player" must {
     "select a suit" which {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
@@ -282,7 +283,8 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     }
   }
 
-  "After playing a 2, a player" can {
+  //Take 2 consequences
+  "After playing a 2, the next player" can {
     "not play any regular card" in {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
       table.underlyingActor.context.become(table.underlyingActor.withPenaltyCards)
@@ -322,7 +324,7 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
     }
   }
 
-  "Afer taking penalty cards, a player" can {
+  "After taking penalty cards, a player" can {
     "play any regular card" in {
       val (table, playerProbes) = giveMeAnInitTable(3, 1)
       table.underlyingActor.context.become(table.underlyingActor.withPenaltyCards)
@@ -342,5 +344,24 @@ with WordSpecLike with Matchers with BeforeAndAfterAll {
           probe.expectMsg(NextTurn(playerId = 1))
       }
     }
+    "take yet another card" in {
+      val (table, playerProbes) = giveMeAnInitTable(3, 1)
+      table.underlyingActor.context.become(table.underlyingActor.withPenaltyCards)
+      table.underlyingActor.penaltyCards = 2
+      table.underlyingActor.discardPile = Card(-61, 2, "blue") :: table.underlyingActor.discardPile
+      table ! TakeCard(playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(TakenCards(Hand(List(Card(4, 2, "blue"), Card(11, 9, "blue"))), playerId = 0))
+          probe.expectMsg(NextTurn(playerId = 0))
+      }
+      table ! TakeCard(playerId = 0)
+      playerProbes.foreach {
+        case (probe, _) =>
+          probe.expectMsg(TakenCards(Hand(List(Card(38, 10, "red"))), playerId = 0))
+          probe.expectMsg(NextTurn(playerId = 1))
+      }
+    }
   }
+
 }
