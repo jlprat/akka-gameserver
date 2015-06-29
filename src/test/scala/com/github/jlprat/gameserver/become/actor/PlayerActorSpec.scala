@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.actor
+package com.github.jlprat.gameserver.become.actor
 
 import akka.actor.{Props, ActorSystem}
 import akka.testkit._
