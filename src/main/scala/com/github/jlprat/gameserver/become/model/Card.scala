@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.model
+package com.github.jlprat.gameserver.become.model
 
 object RankOrdering extends Ordering[Card] {
   override def compare(x: Card, y: Card): Int = x.rank compare y.rank match {

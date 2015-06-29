@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.actors
+package com.github.jlprat.gameserver.become.actors
 
 import akka.actor.{Cancellable, Actor, ActorLogging, ActorRef}
 
@@ -24,9 +24,9 @@ class Player (val id: Int, val tableActor: ActorRef, val clientActor: ActorRef, 
 
   //TODO last card is incomplete (no handling of not calling last card)
 
-  import com.github.jlprat.gameserver.protocol.ClientProtocol._
-  import com.github.jlprat.gameserver.protocol.Protocol._
-  import com.github.jlprat.gameserver.model._
+  import com.github.jlprat.gameserver.become.protocol.ClientProtocol._
+  import com.github.jlprat.gameserver.become.protocol.Protocol._
+  import com.github.jlprat.gameserver.become.model._
   import context._
 
   var playersHand = Hand()

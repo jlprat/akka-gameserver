@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.model
+package com.github.jlprat.gameserver.become.model
 
 /**
  * Companion object for Hand

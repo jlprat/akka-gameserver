@@ -1,8 +1,8 @@
-package com.github.jlprat.gameserver.actors
+package com.github.jlprat.gameserver.become.actors
 
 import akka.actor.{ActorLogging, ActorRef, Actor}
-import com.github.jlprat.gameserver.model.{DiscardPile, Hand}
-import com.github.jlprat.gameserver.protocol.ClientProtocol.Out.WrongAction
+import com.github.jlprat.gameserver.become.model.{DiscardPile, Hand}
+import com.github.jlprat.gameserver.become.protocol.ClientProtocol.Out.WrongAction
 
 object Table {
 
@@ -28,8 +28,8 @@ object Table {
  */
 class Table(players: List[(ActorRef, Int)], seed: Long) extends Actor with ActorLogging{
 
-  import com.github.jlprat.gameserver.model.{Card, Deck}
-  import com.github.jlprat.gameserver.protocol.Protocol._
+  import com.github.jlprat.gameserver.become.model.{Card, Deck}
+  import com.github.jlprat.gameserver.become.protocol.Protocol._
   import Table._
 
   var deck = generateDeck(seed)

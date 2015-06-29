@@ -1,11 +1,11 @@
-package com.github.jlprat.gameserver.protocol
+package com.github.jlprat.gameserver.become.protocol
 
 /**
  * All the protocol messages that are sent and received by the actors
  * Created by josep on 2/21/15.
  */
 object Protocol {
-  import com.github.jlprat.gameserver.model.{Card,Hand}
+  import com.github.jlprat.gameserver.become.model.{Card,Hand}
 
   /**
    * Player tries to play a card

@@ -2,10 +2,10 @@ package com.github.jlprat.gameserver.actor
 
 import akka.actor.{Props, ActorSystem}
 import akka.testkit._
-import com.github.jlprat.gameserver.actors.Table
-import com.github.jlprat.gameserver.model._
-import com.github.jlprat.gameserver.protocol.ClientProtocol.Out.WrongAction
-import com.github.jlprat.gameserver.protocol.Protocol._
+import com.github.jlprat.gameserver.become.actors.Table
+import com.github.jlprat.gameserver.become.model._
+import com.github.jlprat.gameserver.become.protocol.ClientProtocol.Out.WrongAction
+import com.github.jlprat.gameserver.become.protocol.Protocol._
 import scala.concurrent.duration._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 

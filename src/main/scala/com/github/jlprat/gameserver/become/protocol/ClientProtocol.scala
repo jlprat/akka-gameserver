@@ -1,4 +1,4 @@
-package com.github.jlprat.gameserver.protocol
+package com.github.jlprat.gameserver.become.protocol
 
 /**
  * Contains the protocol messages between client and server
@@ -8,7 +8,7 @@ package com.github.jlprat.gameserver.protocol
  */
 object ClientProtocol {
 
-  import com.github.jlprat.gameserver.model.{Card,Hand}
+  import com.github.jlprat.gameserver.become.model.{Card,Hand}
 
   /**
    * Contains all messages that are sent from Client to Server
