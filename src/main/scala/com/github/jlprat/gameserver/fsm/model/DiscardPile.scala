@@ -7,10 +7,10 @@ object DiscardPile {
 
   /**
    * creates a new Discard pile with the specific card
-   * @param card the card to add to the discard pile
+   * @param playedCard the card to add to the discard pile
    * @return the desired discard pile
    */
-  def apply(card: Card) = new DiscardPile(List(card))
+  def apply(playedCard: PlayedCard) = new DiscardPile(List(playedCard))
 
   def empty = new DiscardPile(Nil)
 }
@@ -19,14 +19,14 @@ object DiscardPile {
  * This class represents the discarded cards from all players
  * Created by josep on 12/23/14.
  */
-case class DiscardPile (cards: List[Card]) {
+case class DiscardPile (cards: List[PlayedCard]) {
 
   /**
    * discards a new card to the discard pile
-   * @param card the card to be discarded
+   * @param playedCard the card to be discarded
    * @return a new discarded pile with this card on top
    */
-  def ::(card: Card) = DiscardPile(card :: cards)
+  def ::(playedCard: PlayedCard) = DiscardPile(playedCard :: cards)
 
   /**
    * @return the size of the discard pile
@@ -36,6 +36,6 @@ case class DiscardPile (cards: List[Card]) {
   /**
    * @return the top card of the discard pile if there is any
    */
-  def topCard: Option[Card] = cards.headOption
+  def topCard: Option[PlayedCard] = cards.headOption
 
 }

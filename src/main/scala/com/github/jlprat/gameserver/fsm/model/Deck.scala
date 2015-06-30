@@ -21,6 +21,7 @@ object Deck {
  */
 case class Deck(deck: List[Card]) {
 
+  import Hand._
 
   /**
    * Shuffles the deck
@@ -44,7 +45,7 @@ case class Deck(deck: List[Card]) {
    * @param target the number of cards each player must have
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
-  def draw(numberPlayers: Int, target: Int): Option[(Iterable[Hand], Deck)] = {
+  def draw(numberPlayers: Int, target: Int): Option[(Iterable[Bunch], Deck)] = {
     draw(numberPlayers, target, 1)
   }
 
@@ -56,19 +57,21 @@ case class Deck(deck: List[Card]) {
    *             on how many cards should be still dealt
    * @return an Option with as many Hand objects as players and the remaining Deck
    */
-  def draw(numberPlayers: Int, target: Int, step: Int): Option[(Iterable[Hand], Deck)] = {
+  def draw(numberPlayers: Int, target: Int, step: Int): Option[(Iterable[Bunch], Deck)] = {
     val (intermediate, last) = (target - (target % step), target % step)
     take(numberPlayers * intermediate).flatMap{ case (drawnCards, remainingCards) => {
       val grouped = drawnCards.cards.sliding(step, step).zipWithIndex.toList.groupBy(_._2 % numberPlayers)
-      val hands = for {
+      val bunches = for {
         i <- 0 to (numberPlayers-1)
         cs = grouped(i).map(_._1).flatten
-      } yield Hand(cs)
+      } yield Bunch(cs)
       if (last > 0) {
-        remainingCards.draw(numberPlayers, last, last).map{case (lastHands, finalDeck) =>
-          (lastHands.zip(hands).map{ case (lastHand, previousHand) => lastHand ::: previousHand}, finalDeck)
+        remainingCards.draw(numberPlayers, last, last).map{case (lastBunches, finalDeck) =>
+          (lastBunches.zip(bunches).map{
+            case (lastHand, previousBunch) => Bunch(previousBunch.cards ::: lastHand.cards)
+          }, finalDeck)
         }
-      } else  Some(hands, remainingCards)
+      } else  Some(bunches, remainingCards)
     }}
   }
 
@@ -76,11 +79,11 @@ case class Deck(deck: List[Card]) {
    * takes the 'n' top most card from the deck
    * @return The 'n' top most Card and the remaining Deck
    */
-  def take(n: Int): Option[(Hand, Deck)] = {
+  def take(n: Int): Option[(Bunch, Deck)] = {
     if (deck.size < n) None
     else {
       val (taken, rest) = deck.splitAt(n)
-      Some(Hand(taken), Deck(rest))
+      Some(Bunch(taken), Deck(rest))
     }
   }
 
@@ -91,7 +94,7 @@ case class Deck(deck: List[Card]) {
    * @return None if there is no card in the deck that satisfies {@code p}. Some[Hand, Deck] with all the cards drawn
    *      from the deck until a card that satisfies {@code p} is drawn, and the remaining deck
    */
-  def takeUntil(p: Card => Boolean): Option[(Hand, Deck)] = {
+  def takeUntil(p: Card => Boolean): Option[(Bunch, Deck)] = {
     val takenCards = deck.takeWhile(!p(_))
     take(takenCards.size + 1)
   }

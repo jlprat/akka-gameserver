@@ -19,7 +19,6 @@ object Hand {
    */
   def apply () = new Hand(List())
 
-  type Bunch = Hand
 }
 
 /**
@@ -28,7 +27,6 @@ object Hand {
  */
 case class Hand (cards: List[Card]) {
 
-  import Hand._
   import Card._
 
   /**
@@ -111,3 +109,5 @@ case class Hand (cards: List[Card]) {
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+case class Bunch(cards: List[Card])
