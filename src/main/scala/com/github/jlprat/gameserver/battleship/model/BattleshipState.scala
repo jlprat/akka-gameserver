@@ -9,5 +9,6 @@ case object WaitingForShips extends BattleshipState
 case object PlacingShips extends BattleshipState
 case object WaitingForNextPlayer extends BattleshipState
 case object CheckingShot extends BattleshipState
-case object ShitHit extends BattleshipState
+case object CheckingStatus extends BattleshipState
+case object ShipHit extends BattleshipState
 case object EndGame extends BattleshipState

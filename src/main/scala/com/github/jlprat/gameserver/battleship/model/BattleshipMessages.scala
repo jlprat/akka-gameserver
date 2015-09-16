@@ -6,7 +6,8 @@ package com.github.jlprat.gameserver.battleship.model
 sealed trait BattleshipMessages
 case class PlaceShip(playerId: Int, id: Short, x: Short, y: Short, size: Short, vertical: Boolean) extends BattleshipMessages
 case object ShipsPlaced
-case class Shoot(playerId: Int, x: Short, y: Short) extends BattleshipMessages
+case object NextPlayer
+case class PlaceShot(playerId: Int, x: Short, y: Short) extends BattleshipMessages
 case object Miss extends BattleshipMessages
 case class Hit(playerId: Int, shipId: Short) extends BattleshipMessages
 case object ShipsAlive extends BattleshipMessages
