@@ -5,10 +5,9 @@ package com.github.jlprat.gameserver.battleship.model
  */
 sealed trait BattleshipState
 case object WaitingForPlayers extends BattleshipState
-case object WaitingForShips extends BattleshipState
 case object PlacingShips extends BattleshipState
+case object CheckingPlacedShips extends BattleshipState
 case object WaitingForNextPlayer extends BattleshipState
 case object CheckingShot extends BattleshipState
-case object CheckingStatus extends BattleshipState
-case object ShipHit extends BattleshipState
+case object HitShip extends BattleshipState
 case object EndGame extends BattleshipState
