@@ -22,7 +22,9 @@ class BattleShipActor extends ActorLogging with FSM[BattleshipState, BattleshipD
 
   when(WaitingForPlayers) {
     case Event(PlaceShip(playerId, shipId, x, y, size, vertical), data) =>
-      goto(PlacingShips) using data.placeShip(playerId, shipId, x, y, size, vertical)
+      if (data.canShipBePlaced(playerId, shipId, x, y, size, vertical))
+        goto(PlacingShips) using data.placeShip(playerId, shipId, x, y, size, vertical)
+      else stay
   }
 
   when(PlacingShips) {
