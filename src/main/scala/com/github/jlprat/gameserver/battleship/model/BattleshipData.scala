@@ -10,7 +10,7 @@ case class BattleshipData(grids: Array[Map[(Short,Short), CellStatus]], currentP
     grids(playerIdx).isDefinedAt((x,y))
   }
 
-  def canShipBePlaced(playerIdx: Int, shipId: Short, x: Short, y: Short, size: Short, vertical: Boolean) : Boolean = {
+  def canShipBePlaced(playerIdx: Int, shipId: Short, x: Short, y: Short, size: Short, vertical: Boolean) : Boolean = vertical match {
     case true if y + size < 10 =>
       val yPositions = List.tabulate(size)(elem => y + elem)
        yPositions.forall(yPos => !isOccupied(playerIdx, x, yPos.toShort))
