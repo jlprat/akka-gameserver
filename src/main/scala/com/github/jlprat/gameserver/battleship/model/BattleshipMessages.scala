@@ -14,3 +14,5 @@ case object Hit extends BattleshipMessages
 case object ShipsAlive extends BattleshipMessages
 case object AllShipsSunk extends BattleshipMessages
 case object Timeout extends BattleshipMessages
+
+case class Message(msg: String)
